@@ -3,4 +3,7 @@ module Lib
     ) where
 
 someFunc :: IO ()
-someFunc = putStrLn "Hello World"
+someFunc = do
+  putStrLn "Hello world"
+  n <- getLine
+  putStrLn ""
