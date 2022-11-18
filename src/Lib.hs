@@ -33,35 +33,9 @@ count xs = count' 0 xs
     count' l (_ : xs) = count' (l + 1) xs
     count' l [] = l
 
-insert :: (Ord t, Num t) => a -> t -> [a] -> [a]
-insert elem p xs = insert' elem p xs []
-  where
-    insert' elem p (x : xs) list
-      | p >= (count xs) + 1 = atLast elem xs -- Если индекс вставки за пределами списка, то вставляю в конец
-      | p == 0 = insert' elem (-1) (x : xs) (atLast elem list)
-      | otherwise = insert' elem (p - 1) xs (atLast x list)
-      where
-        atLast a (y : ys) = y : atLast a ys
-        atLast a [] = [a]
-    insert' _ _ [] list = list
-
 for :: [t] -> (t -> a) -> [a]
 for (x : xs) f = f x : for xs f
 for [] _ = []
-
-sum :: Num a => [a] -> a
-sum xs = sum' 0 xs
-  where
-    sum' :: Num a => a -> [a] -> a
-    sum' l [x] = l + x
-    sum' l (x : xs) = sum' (l + x) xs
-    sum' l [] = l
-
-reverse :: [a] -> [a]
-reverse list = reverse' list []
-  where
-    reverse' (x : xs) reserved = reverse' xs (x : reserved)
-    reverse' [] reserved = reserved
 
 filter :: (a -> Bool) -> [a] -> [a]
 filter p (x : xs)
@@ -73,11 +47,11 @@ all :: (t -> Bool) -> [t] -> Bool
 all p (x : xs) = p x && all p xs
 all _ [] = True
 
-take l xs = take' l xs []
-  where
-    take' l (x : xs) list
-      | l == 0 = (list)
-      | otherwise = x : take' (l - 1) xs (list)
+take :: (Eq t, Num t) => t -> [a] -> [a]
+take l (x : xs) 
+  | l /= 0 = x : take (l - 1) xs 
+  | otherwise = []
+take _ [] = []
 
 skip :: (Eq t, Num t) => t -> [a] -> [a]
 skip l (x : xs)
@@ -89,24 +63,38 @@ add a (x : xs) = x : add a xs
 add a [] = [a]
 
 removeAt :: (Eq t, Num t) => t -> [a] -> [a]
-removeAt i xs = removeAt' i xs []
-  where
-    removeAt' i (x : xs) list
-      | i == 0 = removeAt' (-1) xs list
-      | null xs = list
-      | otherwise = x : removeAt' (i - 1) xs list
+removeAt i (x : xs)
+  | i == 0 = removeAt (-1) xs
+  | otherwise = x : removeAt (i - 1) xs
+removeAt _ [] = []
 
 remove :: Eq a => a -> [a] -> [a]
-remove elem xs = remove' elem xs []
-  where
-    remove' elem (x : xs) list
-      | x == elem = remove' elem xs list
-      | otherwise = x : remove' elem xs list
-    remove' _ [] list = list
+remove elem (x : xs)
+  | x == elem = remove elem xs
+  | otherwise = x : remove elem xs
+remove _ [] = []
 
 any :: (t -> Bool) -> [t] -> Bool
 any p (x : xs) = p x || any p xs
 any _ [] = False
+
+until :: (t -> Bool) -> (t -> t) -> t -> t
+until p f x
+  | p x = x
+  | otherwise = until p f (f x)
+
+while :: (a -> Bool) -> [a] -> [a]
+while p (x : xs)
+  | p x = x : while p xs
+  | otherwise = []
+
+sum :: Num a => [a] -> a
+sum xs = sum' 0 xs
+  where
+    sum' :: Num a => a -> [a] -> a
+    sum' l [x] = l + x
+    sum' l (x : xs) = sum' (l + x) xs
+    sum' l [] = l
 
 concat :: [[a]] -> [a]
 concat list = concat' list []
@@ -116,23 +104,24 @@ concat list = concat' list []
     concat'' (x : xs) list = concat'' xs (x : list)
     concat'' [] list = list
 
-while :: (a -> Bool) -> [a] -> [a]
-while p xs = while' p xs []
-  where
-    while' p (x : xs) list
-      | p x = x : while' p xs (list)
-      | otherwise = list
-
 reduce :: Num t => (t -> a -> t) -> [a] -> t
 reduce f (x : xs) = reduce' f 0 xs
   where
     reduce' f a (x : xs) = reduce' f (a `f` x) xs
     reduce' f a [] = (a `f` x)
 
-until :: (t -> Bool) -> (t -> t) -> t -> t
-until p f x
-  | p x = x
-  | otherwise = until p f (f x)
+reverse :: [a] -> [a]
+reverse list = reverse' list []
+  where
+    reverse' (x : xs) reserved = reverse' xs (x : reserved)
+    reverse' [] reserved = reserved
+    
+insert elem p (x:xs)  
+      | p >= (count xs) = x : insert elem p xs 
+      | p == 0 = elem : insert elem (-1) (x : xs)       
+      | otherwise = x : insert elem (p - 1) xs 
+insert elem 0 [] = [elem]
+insert _ _ [] = []
 
 someFunc :: IO ()
 someFunc = do
