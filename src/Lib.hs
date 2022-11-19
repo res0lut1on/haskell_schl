@@ -27,11 +27,9 @@ map :: (t -> a) -> [t] -> [a]
 map f (x : xs) = f x : map f xs
 map _ [] = []
 
-count :: Num t => [a] -> t
-count xs = count' 0 xs
-  where
-    count' l (_ : xs) = count' (l + 1) xs
-    count' l [] = l
+count :: Num a1 => [a2] -> a1
+count (_ : xs) = 1 + count xs
+count [] = 0
 
 for :: [t] -> (t -> a) -> [a]
 for (x : xs) f = f x : for xs f
@@ -48,8 +46,8 @@ all p (x : xs) = p x && all p xs
 all _ [] = True
 
 take :: (Eq t, Num t) => t -> [a] -> [a]
-take l (x : xs) 
-  | l /= 0 = x : take (l - 1) xs 
+take l (x : xs)
+  | l /= 0 = x : take (l - 1) xs
   | otherwise = []
 take _ [] = []
 
@@ -89,12 +87,8 @@ while p (x : xs)
   | otherwise = []
 
 sum :: Num a => [a] -> a
-sum xs = sum' 0 xs
-  where
-    sum' :: Num a => a -> [a] -> a
-    sum' l [x] = l + x
-    sum' l (x : xs) = sum' (l + x) xs
-    sum' l [] = l
+sum (x : xs) = x + sum xs
+sum [] = 0
 
 concat :: [[a]] -> [a]
 concat list = concat' list []
@@ -104,22 +98,19 @@ concat list = concat' list []
     concat'' (x : xs) list = concat'' xs (x : list)
     concat'' [] list = list
 
-reduce :: Num t => (t -> a -> t) -> [a] -> t
-reduce f (x : xs) = reduce' f 0 xs
-  where
-    reduce' f a (x : xs) = reduce' f (a `f` x) xs
-    reduce' f a [] = (a `f` x)
+reduce _ [x] = x
+reduce f (x : xs) = f x (reduce f xs)
 
 reverse :: [a] -> [a]
 reverse list = reverse' list []
   where
     reverse' (x : xs) reserved = reverse' xs (x : reserved)
     reverse' [] reserved = reserved
-    
-insert elem p (x:xs)  
-      | p >= (count xs) = x : insert elem p xs 
-      | p == 0 = elem : insert elem (-1) (x : xs)       
-      | otherwise = x : insert elem (p - 1) xs 
+
+insert elem p (x : xs)
+  | p >= (count xs) = x : insert elem p xs
+  | p == 0 = elem : insert elem (-1) (x : xs)
+  | otherwise = x : insert elem (p - 1) xs
 insert elem 0 [] = [elem]
 insert _ _ [] = []
 
@@ -136,7 +127,7 @@ someFunc = do
   print (until (> 50) (* 3) 2)
   putStrLn ""
   putStr "reduce (*) [1,2,3,4,5] = "
-  print (reduce (-) [1, 2, 3, 4, 5])
+  print (reduce (*) [1, 2, 3, 4, 5])
   putStrLn ""
   putStr "while odd [1,1,3,4,5] = "
   print (while odd [1, 1, 3, 4, 5])
