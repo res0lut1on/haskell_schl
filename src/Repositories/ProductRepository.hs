@@ -19,7 +19,7 @@ getProductById searchId = head $ filter (\x -> productId x == searchId) products
 getProductsByShop :: Shop -> [Product]
 getProductsByShop (Shop sId _ _) = filter (\x -> productShopId x == sId) products
 
-getProductsByOrderId :: Int -> [Product]
+getProductsByOrderId :: Int ->  [Product]
 getProductsByOrderId sId = filter (\x -> productId x == sId) products
 
 getProductsByOrder :: Order -> [Product]

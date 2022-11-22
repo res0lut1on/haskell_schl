@@ -33,9 +33,9 @@ data ShopModel = ShopModel
   }
 
 data OrderModel = OrderModel
-  { orderModeId :: Int,
+  { orderModelId :: Int,
     orderModelCustomer :: Maybe CustomerModel,
-    orderModelNumber :: Int,
+    orderModelNumber :: String,
     orderProducts :: Maybe [ProductModel]
   }
 
