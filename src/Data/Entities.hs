@@ -14,19 +14,24 @@ where
 
 import Data.CommonData (Color (..))
 
-data Product = Product Int Int String Double Color
+type ProductId = Int
+type ProductShopId = Int
+type ProductName = String
+type ProductPrice = Double
+
+data Product = Product ProductId ProductShopId ProductName ProductPrice Color
   deriving (Show)
 
-productId :: Product -> Int
+productId :: Product -> ProductId
 productId (Product prodId _ _ _ _) = prodId
 
-productShopId :: Product -> Int
+productShopId :: Product -> ProductShopId
 productShopId (Product _ pshopId _ _ _) = pshopId
 
-productName :: Product -> String
+productName :: Product -> ProductName
 productName (Product _ _ name _ _) = name
 
-productPrice :: Product -> Double
+productPrice :: Product -> ProductPrice
 productPrice (Product _ _ _ price _) = price
 
 productColor :: Product -> Color

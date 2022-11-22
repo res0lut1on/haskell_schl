@@ -45,9 +45,3 @@ data CustomerModel = CustomerModel
     customerModelAddress :: String,
     customerModelOrders :: Maybe [OrderModel]
   }
-
--- data ProductOrderModel = ProductOrderModel
---   { productOrderModelId :: Int,
---     pOrderModelId :: Int,
---     oProductId :: Int
---   }

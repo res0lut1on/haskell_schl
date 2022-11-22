@@ -1,22 +1,23 @@
 module Repositories.OrderRepository
   ( getOrders,
     getOrderById,
-    getOrdersByCustomer,
     getOrderByCustomerId,
+    getOrdersByCustomerId,
   )
 where
 
 import Data.Context (orders)
 import Data.Entities (Customer (..), Order (..))
+import Utilities (maybeHead)
 
 getOrders :: [Order]
 getOrders = orders
 
-getOrderById :: Int -> Order
-getOrderById searchId = head $ filter (\x -> orderId x == searchId) orders
+getOrderById :: Int -> Maybe Order
+getOrderById searchId = maybeHead $ filter (\x -> orderId x == searchId) getOrders
 
-getOrdersByCustomer :: Customer -> [Order]
-getOrdersByCustomer (Customer sId _ _) = filter (\x -> orderId x == sId) orders
+getOrderByCustomerId :: Int -> Maybe Order
+getOrderByCustomerId sId = maybeHead $ filter (\x -> orderId x == sId) getOrders
 
-getOrderByCustomerId :: Int -> Order
-getOrderByCustomerId sId = head $ filter (\x -> orderId x == sId) orders
+getOrdersByCustomerId :: Int -> [Order]
+getOrdersByCustomerId sId = filter (\x -> orderId x == sId) getOrders

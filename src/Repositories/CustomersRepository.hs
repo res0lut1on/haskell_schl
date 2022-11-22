@@ -8,15 +8,17 @@ where
 
 import Data.Context (orders, сustomers)
 import Data.Entities (Customer (..), Order (..))
+import Repositories.OrderRepository
+import Utilities (maybeHead)
 
 getCustomers :: [Customer]
 getCustomers = сustomers
 
-getCustomerById :: Int -> Customer
-getCustomerById sId = head $ filter (\x -> customerId x == sId) сustomers
+getCustomerById :: Int -> Maybe Customer
+getCustomerById sId = maybeHead $ filter (\x -> customerId x == sId) getCustomers
 
-getCustomerByOrder :: Order -> Customer
+getCustomerByOrder :: Order -> Maybe Customer
 getCustomerByOrder (Order _ custId _) = getCustomerById custId
 
-getCustomerByOrderId :: Int -> Customer
-getCustomerByOrderId orderID = getCustomerByOrder $ head $ filter (\x -> orderId x == orderID) orders
+getCustomerByOrderId :: Int -> Maybe Customer
+getCustomerByOrderId orderID = getCustomerByOrder $ head $ filter (\x -> orderId x == orderID) getOrders

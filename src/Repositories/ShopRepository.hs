@@ -7,10 +7,10 @@ where
 import Data.Context (shops)
 import Data.Entities (Shop (..))
 import Lib
+import Utilities (maybeHead)
 
 getShops :: [Shop]
 getShops = shops
 
-getShopById :: Int -> Shop -- Maybe
-getShopById searchId = head $ Lib.filter (\x -> shopId x == searchId) shops
-
+getShopById :: Int -> Maybe Shop
+getShopById searchId = maybeHead $ Lib.filter (\x -> shopId x == searchId) getShops

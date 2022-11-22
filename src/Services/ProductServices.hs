@@ -8,5 +8,9 @@ import Repositories.ShopRepository
 getModelProducts :: [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) Repositories.ProductRepository.getProducts
 
-getModelProductById :: Int -> ProductModel
-getModelProductById prID = mappingProductToModel (getProductById prID) (Just $ getShopById $ productShopId $ getProductById prID)
+getModelProductById :: Int -> Maybe ProductModel
+getModelProductById prID =
+  let prod = getProductById prID
+   in case prod of
+        Nothing -> Nothing
+        Just value -> Just $ mappingProductToModel value (getShopById $ productShopId value)
