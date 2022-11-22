@@ -17,7 +17,7 @@ module Lib
     reduce,
     until,
     someFunc,
-    take,
+    take,    
   )
 where
 
