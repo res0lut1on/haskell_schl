@@ -24,19 +24,10 @@ getProductsByOrder :: Order -> [Product]
 getProductsByOrder (Order _ sId _) = getProductsByOrderId sId
 
 getProductsByOrderId :: Int -> [Product]
-getProductsByOrderId sId =                              -- Она рабочая!!!
-  filter
-    ( \x ->
-        any
-          ( \o ->
-              poId o == productId x
-          )
-          ( filter
-              ( \a ->
-                  opId a == sId
-              )
-              productOrder
-          )
-    )
-    getProducts
-
+getProductsByOrderId sId = getProductsByOrderId' (filter (\a -> opId a == sId) productOrder)
+  where
+    getProductsByOrderId' (x : xs) =
+      let prod = (getProductById $ poId x)
+       in case prod of
+            Just value -> value : getProductsByOrderId' xs
+    getProductsByOrderId' [] = []

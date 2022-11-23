@@ -33,7 +33,7 @@ someTest = do
   putStrLn ""
   putStrLn "Product List for Order id = 3"
   putStrLn ""
-  print (getProductsByOrderId 3)
+  print (getProductsByOrderId 4)
   putStrLn ""
 
 

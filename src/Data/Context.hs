@@ -97,13 +97,13 @@ productOrder =
         opId = 3
       },
     ProductOrder
-      { productOrderId = 4,
+      { productOrderId = 5,
         poId = 2,
         opId = 4
       },
     ProductOrder
-      { productOrderId = 5,
-        poId = 1,
+      { productOrderId = 6,
+        poId = 2,
         opId = 4
       }
   ]

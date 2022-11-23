@@ -46,7 +46,7 @@ mappingShopToModel shop prod =
 mappingCustomerToModel :: Customer -> Maybe [Order] -> CustomerModel
 mappingCustomerToModel cust ord =
   let orderModel = case ord of
-        Just value -> Just $ map (\x -> mappingOrderToModel x (Just $ getProductsByOrderId (orderId x)) Nothing) value -- стоит переделать без прямой связи с Repository?
+        Just value -> Just $ map (\x -> mappingOrderToModel x (Just $ getProductsByOrderId (orderId x)) Nothing) value
         Nothing -> Nothing
    in CustomerModel
         { customerModelId = customerId cust,
