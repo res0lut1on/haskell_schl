@@ -44,7 +44,11 @@ shops =
   ]
 
 products :: [Product]
-products = [Product 1 2 "Milk" 3.90 White, Product 2 1 "Kabachok" 5.49 Other, Product 3 2 "Honey bunny" 9.99 Black]
+products =
+  [ Product 1 2 "Milk" 3.90 White,
+    Product 2 1 "Kabachok" 5.49 Other,
+    Product 3 2 "Honey bunny" 9.99 Black
+  ]
 
 orders :: [Order]
 orders =
@@ -86,5 +90,20 @@ productOrder =
       { productOrderId = 3,
         poId = 1,
         opId = 3
+      },
+    ProductOrder
+      { productOrderId = 4,
+        poId = 2,
+        opId = 3
+      },
+    ProductOrder
+      { productOrderId = 4,
+        poId = 2,
+        opId = 4
+      },
+    ProductOrder
+      { productOrderId = 5,
+        poId = 1,
+        opId = 4
       }
   ]

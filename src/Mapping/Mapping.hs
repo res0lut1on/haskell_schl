@@ -22,12 +22,12 @@ import Data.Models
     ProductModel (..),
     ShopModel (..),
   )
-import Repositories.ProductRepository (getProductById, getProducts, getProductsByOrderId)
+import Repositories.ProductRepository (getProductsByOrderId)
 
 mappingProductToModel :: Product -> Maybe Shop -> ProductModel -- !
 mappingProductToModel prod sh =
   let shopModel = case sh of
-        Just value -> Just $ ShopModel (shopId value) (shopName value) (shopAddress value) Nothing
+        Just value -> Just $ mappingShopToModel value Nothing
         Nothing -> Nothing
    in ProductModel (productId prod) shopModel (productName prod) (productPrice prod) (productColor prod)
 

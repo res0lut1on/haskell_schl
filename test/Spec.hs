@@ -23,17 +23,17 @@ someTest = do
   putStrLn ""
   print (getProducts)
   putStrLn ""
-  putStrLn "Products List for Shops id = 2"
-  putStrLn ""
-  print (getProductsByShop (getShopById 2))
-  putStrLn ""
   putStrLn "All Orders"
   putStrLn ""
   print (getOrders)
   putStrLn ""
   putStrLn "Order List for Customer id = 3"
   putStrLn ""
-  print (getOrdersByCustomer(getCustomerById 3))
+  print (getOrdersByCustomerId 3)
+  putStrLn ""
+  putStrLn "Product List for Order id = 3"
+  putStrLn ""
+  print (getProductsByOrderId 3)
   putStrLn ""
 
 

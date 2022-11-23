@@ -6,7 +6,7 @@ module Repositories.CustomersRepository
   )
 where
 
-import Data.Context (orders, сustomers)
+import Data.Context (сustomers)
 import Data.Entities (Customer (..), Order (..))
 import Repositories.OrderRepository
 import Utilities (maybeHead)

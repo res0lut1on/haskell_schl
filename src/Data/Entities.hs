@@ -15,8 +15,11 @@ where
 import Data.CommonData (Color (..))
 
 type ProductId = Int
+
 type ProductShopId = Int
+
 type ProductName = String
+
 type ProductPrice = Double
 
 data Product = Product ProductId ProductShopId ProductName ProductPrice Color
@@ -63,3 +66,4 @@ data ProductOrder = ProductOrder
     poId :: Int,
     opId :: Int
   }
+  deriving (Show)

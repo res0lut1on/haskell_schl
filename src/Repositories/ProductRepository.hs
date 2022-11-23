@@ -7,8 +7,8 @@ module Repositories.ProductRepository
   )
 where
 
-import Data.Context (products)
-import Data.Entities (Customer, Order (..), Product (..), Shop (..), productId, productShopId)
+import Data.Context (productOrder, products)
+import Data.Entities (Order (..), Product (..), ProductOrder (opId, poId), Shop (..), productId, productShopId)
 import Utilities (maybeHead)
 
 getProducts :: [Product]
@@ -20,8 +20,23 @@ getProductById searchId = maybeHead $ filter (\x -> productId x == searchId) get
 getProductsByShop :: Shop -> [Product]
 getProductsByShop (Shop sId _ _) = filter (\x -> productShopId x == sId) getProducts
 
-getProductsByOrderId :: Int -> [Product]
-getProductsByOrderId sId = filter (\x -> productId x == sId) getProducts
-
 getProductsByOrder :: Order -> [Product]
-getProductsByOrder (Order _ sId _) = filter (\x -> productId x == sId) getProducts
+getProductsByOrder (Order _ sId _) = getProductsByOrderId sId
+
+getProductsByOrderId :: Int -> [Product]
+getProductsByOrderId sId =                              -- Она рабочая!!!
+  filter
+    ( \x ->
+        any
+          ( \o ->
+              poId o == productId x
+          )
+          ( filter
+              ( \a ->
+                  opId a == sId
+              )
+              productOrder
+          )
+    )
+    getProducts
+

@@ -17,7 +17,7 @@ getOrderById :: Int -> Maybe Order
 getOrderById searchId = maybeHead $ filter (\x -> orderId x == searchId) getOrders
 
 getOrderByCustomerId :: Int -> Maybe Order
-getOrderByCustomerId sId = maybeHead $ filter (\x -> orderId x == sId) getOrders
+getOrderByCustomerId sId = maybeHead $ filter (\x -> oCId x == sId) getOrders
 
 getOrdersByCustomerId :: Int -> [Order]
-getOrdersByCustomerId sId = filter (\x -> orderId x == sId) getOrders
+getOrdersByCustomerId sId = filter (\x -> oCId x == sId) getOrders
