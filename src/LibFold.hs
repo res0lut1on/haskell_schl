@@ -29,6 +29,7 @@ module LibFold
     add,
     take,
     foldTest,
+    whileDo,
   )
 where
 
@@ -80,6 +81,9 @@ reduce f (x:xs) = foldr (\acc curr -> f curr acc) x xs
 
 while :: (a -> Bool) -> [a] -> [a]
 while p = foldr (\curr acc -> if p curr then curr:acc else []) []
+
+whileDo :: (a -> Bool) -> [a] -> [a]
+whileDo p = foldr (\curr acc -> if p curr then curr:acc else [curr]) []
 
 seq :: a -> b -> b
 seq _ b = b
@@ -179,7 +183,7 @@ instance Eq Product where
 
 instance Show Product where
   show (Product _ n _) = n
- 
+
 groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 groupBy cond = post . foldr fn ([],[])
   where
@@ -195,34 +199,34 @@ groupBy cond = post . foldr fn ([],[])
 foldTest :: IO ()
 foldTest = do
   putStrLn ""
-  putStr "foldl (/) 27 [3,1,3] = "  
+  putStr "foldl (/) 27 [3,1,3] = "
   print (foldl (/) 27 [3, 1, 3])
   putStrLn ""
-  putStr "foldr (*) 1 [3,3,3] = "  
+  putStr "foldr (*) 1 [3,3,3] = "
   print (foldr (*) 1 [3, 3, 3])
   putStrLn ""
-  putStr "foldl' (+) 0 [1,2,3] = "  
+  putStr "foldl' (+) 0 [1,2,3] = "
   print (foldl' (+) 0 [1, 2, 3])
   putStrLn ""
-  putStr "map (*2) [4,3,2,1,5] = "  
+  putStr "map (*2) [4,3,2,1,5] = "
   print (show (map (* 2) [4, 3, 2, 1, 5]))
   putStrLn ""
   putStr "for [4,3,2,1,5] (*3) = "
   print (show (for [4, 3, 2, 1, 5] (* 3)))
   putStrLn ""
-  putStr "filter even [4,3,2,1,5] = "  
+  putStr "filter even [4,3,2,1,5] = "
   print (show (filter even [4, 3, 2, 1, 5]))
   putStrLn ""
-  putStr "all odd [4,3,2,1,5] = "  
+  putStr "all odd [4,3,2,1,5] = "
   print (show (all odd [4, 3, 2, 1, 5]))
   putStrLn ""
-  putStr "count [1,2,3,4,5]) = "  
+  putStr "count [1,2,3,4,5]) = "
   print (count [1, 2, 3, 4, 5])
   putStrLn ""
-  putStr "any odd [4,3,2,1,5] = "  
+  putStr "any odd [4,3,2,1,5] = "
   print (show (any odd [4, 3, 2, 1, 5]))
   putStrLn ""
-  putStr "max [4,7,2,1,5] = "  
+  putStr "max [4,7,2,1,5] = "
   print (show (max [4, 7, 2, 1, 5]))
   putStrLn ""
   putStr "min [4,7,2,1,5] = "
@@ -231,19 +235,19 @@ foldTest = do
   putStr "sum [4,7,2,1,5] = "
   print (show (sum [4, 7, 2, 1, 5]))
   putStrLn ""
-  putStr "reverse [4,7,2,1,5] = "  
+  putStr "reverse [4,7,2,1,5] = "
   print (show (reverse [4, 7, 2, 1, 5]))
   putStrLn ""
-  putStr "take 3 [4,7,2,1,5] = "  
+  putStr "take 3 [4,7,2,1,5] = "
   print (show (take 3 [4, 7, 2, 1, 5]))
   putStrLn ""
-  putStr "skip 3 [4,7,2,1,5] = "  
+  putStr "skip 3 [4,7,2,1,5] = "
   print (show (skip 3 [4, 7, 2, 1, 5]))
   putStrLn ""
-  putStr "add 3 [4,7,2,1,5] = "  
+  putStr "add 3 [4,7,2,1,5] = "
   print (show (add 3 [4, 7, 2, 1, 5]))
   putStrLn ""
-  putStr "while odd [1,1,3,4,5,5,6,7,8,9] = "  
+  putStr "while odd [1,1,3,4,5,5,6,7,8,9] = "
   print (while odd [1,1,3,4,5,5,6,7,8,9])
   putStrLn ""
   putStr "removeAt 1 [4,3,2,1,5] = "
@@ -258,6 +262,9 @@ foldTest = do
   putStr "until (>100) (*2) 1 = "
   print (show (until (>100) (*2) 1))
   putStrLn ""
+  putStr "whileDo odd [1,1,3,4,5,5,6,7,8,9] = "
+  print (show (whileDo odd [1,1,3,4,5,5,6,7,8,9]))
+  putStrLn ""
   putStr "concat [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]] = "
   print (show (concat [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]]))
   putStrLn ""
@@ -265,18 +272,18 @@ foldTest = do
   print (show (groupBy (\x y -> (x*y `mod` 3) == 0) [1,2,3,4,5,6,7,8,9]))
   putStrLn ""
   putStr "groupBy [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]] = "
-  print (show (groupBy (\x y -> (x == y)) ord))
+  print (show (groupBy (==) ord))
   putStrLn ""
 
-  
+
 ord :: [Product]
-ord = [ Product {prodId = 1, price = 100, name = "Korona Extra"}, 
+ord = [ Product {prodId = 1, price = 100, name = "Korona Extra"},
         Product {prodId = 2, price = 100, name = "Biver"},
         Product {prodId = 4, price = 1000, name = "Water"},
         Product {prodId = 5, price = 1000, name = "Ice Cream"},
         Product {prodId = 6, price = 500, name = "Apple"},
         Product {prodId = 7, price = 750, name = "Juice"},
-        Product {prodId = 8, price = 750, name = "Latte"},      
+        Product {prodId = 8, price = 750, name = "Latte"},
         Product {prodId = 3, price = 750, name = "Hennesy"}]
 
 
