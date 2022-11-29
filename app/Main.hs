@@ -1,9 +1,9 @@
 module Main (main) where
 
-import Lib
+import LibFold
 
 main :: IO ()
-main = someFunc
+main = print
 
 
 

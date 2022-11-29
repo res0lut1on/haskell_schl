@@ -1,0 +1,54 @@
+# Query: update
+
+41 results - 8 files
+
+src/Repositories/CustomersRepository.hs:
+  10:     editCustomer,
+  52: editCustomer :: Customer -> IO ()
+  53: editCustomer = editCust
+
+src/Repositories/OrderRepository.hs:
+   6:     editOrder,
+  46: editOrder :: Order -> IO ()
+  47: editOrder = editOrd
+
+src/Repositories/ProductRepository.hs:
+   6:     editProduct,
+  16: import Util.FileUtil (addProd, readAllProductOrder, readAllProducts, removeProd, editProd)
+  69: editProduct :: Product -> IO ()
+  70: editProduct = editProd
+
+src/Repositories/ShopRepository.hs:
+   5:     editShop,
+  38: editShop :: Shop -> IO ()
+  39: editShop = editShp
+
+src/Services/CustomerServices.hs:
+   4: import Repositories.CustomersRepository (getCustomerById, addCustomer, removeCustomer, editCustomer)
+  37: editModelCustomer :: CustomerModel -> IO ()
+  38: editModelCustomer newCust = editCustomer $ mappingModelToCustomer newCust
+
+src/Services/OrderServices.hs:
+   4: import Repositories.OrderRepository (addOrder, getOrderById, getOrders, removeOrder, editOrder)
+  27: editModelOrder :: OrderModel -> IO ()
+  28: editModelOrder item = editOrder $ mappingModelToOrder item
+
+src/Services/ProductServices.hs:
+  29: editModelProduct item = editProduct $ mappingModelToProduct item
+
+src/Util/FileUtil.hs:
+   14:     editCust,
+   15:     editProd,
+   16:     editShp,
+   17:     editOrd,
+   18:     editProdOrd,
+  351: editCust :: Customer -> IO ()
+  352: editCust new =
+  357: editProd :: Product -> IO ()
+  358: editProd new =
+  363: editShp :: Shop -> IO ()
+  364: editShp new =
+  369: editOrd :: Order -> IO ()
+  370: editOrd new =
+  375: editProdOrd :: ProductOrder -> IO ()
+  376: editProdOrd new =
