@@ -4,55 +4,114 @@ module Spec
   )
 where
 
+import LibFold
+
 import Repositories.CustomersRepository
 import Repositories.OrderRepository
 import Repositories.ProductRepository
 import Repositories.ShopRepository
 
+import Data.Models
+
+import Services.CustomerServices
+
+import Data.Entities
+import Util.FileUtil
+
 busTest :: IO ()
 busTest = do
+  out <- initDataBase
   putStrLn ""
   putStrLn "All Customers"
   putStrLn ""
-  print (getCustomers)
+  out <- getCustomers
+  print (out)
   putStrLn ""
-  putStrLn "Customer, id =2 "
+  putStrLn "Customer, id = 2 "
   putStrLn ""
-  print (getCustomerById 2)
+  out <- getCustomerById 2
+  print (out)
   putStrLn ""
   putStrLn "All Product"
   putStrLn ""
-  print (getProducts)
+  out <- getProducts
+  print (out)
+  putStrLn ""
+  putStrLn "Product, id = 3"
+  putStrLn ""
+  out <- getProductById 3
+  print (out)
+  putStrLn ""
+  putStrLn "All Shops"
+  putStrLn ""
+  out <- getShops
+  print (out)
+  putStrLn ""
+  putStrLn "Shop, id = 3"
+  putStrLn ""
+  out <- getShopById 1
+  print (out)
   putStrLn ""
   putStrLn "All Orders"
   putStrLn ""
-  print (getOrders)
+  out <- getOrd
+  print (out)
   putStrLn ""
-  putStrLn "Order List for Customer id = 3"
+  putStrLn "Order, id = 2"
   putStrLn ""
-  print (getOrdersByCustomerId 3)
+  out <- getOrderById 2
+  print (out)
   putStrLn ""
-  putStrLn "Product List for Order id = 3"
+  putStrLn "Delete Customer, id = 2"
+  removeCustomer 2      
+  out <- readAllCustomers
+  print out
   putStrLn ""
-  print (getProductsByOrderId 4)
+  putStrLn "Add Customer"
+  addCustomer (Customer{customerName = "Bob", customerId = 2, customerAddress = "Brugge"})
   putStrLn ""
+  out <- readAllCustomers
+  putStrLn ""
+  print out
+  initDataBase
+  putStrLn ""
+  putStrLn "All Model Customer"
+  putStrLn ""
+  out <- getModelCustomers
+  print out
+  putStrLn ""
+  putStrLn "Add Model Customer"
+  putStrLn ""
+  addModelCustomer (CustomerModel {
+    customerModelId = 43,
+    customerModelAddress = "Kochka",
+    customerModelName = "Killreal",
+    customerModelOrders = Nothing
+  })
+  out <- getModelCustomers
+  print out 
+  out <- getCustomers
+  print out 
+   
+  putStrLn ""
+  
+-- data OrderModel = OrderModel
+--   { orderModelId :: Int,
+--     orderModelCustomer :: Maybe CustomerModel,
+--     orderModelNumber :: String,
+--     orderProducts :: Maybe [ProductModel]
+--   }
 
-foldTest :: IO ()
-foldTest = do
-  putStrLn ""
-  putStrLn "foldl (/) 27 [3,1,3]"
-  putStrLn ""
-  print (foldl (/) 27 [3, 1, 3])
-  putStrLn ""
-  putStrLn "foldr (*) 1 [3,3,3]"
-  putStrLn ""
-  print (foldr (*) 1 [3, 3, 3])
-  putStrLn ""
-  putStrLn "fold' (+) 0 [1,2,3]"
-  putStrLn ""
-  print (foldr (+) 0 [1, 2, 3])
-  putStrLn ""
-  putStr "map (*2) [4,3,2,1,5] = "
-  putStrLn ""
-  print (show (map (* 2) [4, 3, 2, 1, 5]))
-  putStrLn ""
+  -- putStrLn "Order List for Customer id = 3"
+  -- putStrLn ""
+  -- print (getOrdersByCustomerId 3)
+  -- putStrLn ""
+  -- putStrLn "Product List for Order id = 3"
+  -- putStrLn ""
+  -- print (getProductsByOrderId 4)
+  -- putStrLn ""
+  -- putStrLn ""
+  -- print (sum [1,2,3,4])
+  -- putStrLn ""
+
+
