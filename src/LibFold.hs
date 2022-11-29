@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use map" #-}
 module LibFold
   ( module Prelude,
     foldl,
@@ -175,6 +178,17 @@ skip n xs = foldr g z xs 0 xs
       | otherwise = r (i + 1) t
     z _ _ = []
 
+-- groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
+-- groupBy cond = post . foldr fn ([], [])
+--   where
+--     post ([], yss) = yss
+--     post (xs, yss) = xs : yss
+
+--     fn a ([], yss) = ([a], yss)
+--     fn a (b : bs, yss)
+--       | cond a b = (a : b : bs, yss)
+--       | otherwise = ([a], (b : bs) : yss)
+
 data Product = Product
   { prodId :: Int,
     name :: String,
@@ -185,18 +199,41 @@ instance Eq Product where
   x == y = price x == price y
 
 instance Show Product where
-  show (Product _ n _) = n
+  show (Product _ n pr) = n ++ " = " ++ show pr
 
-groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
-groupBy cond = post . foldr fn ([], [])
+ord :: [Product]
+ord =
+  [ Product {prodId = 1, price = 1, name = "Korona Extra"},
+    Product {prodId = 2, price = 1, name = "Biver"},
+    Product {prodId = 4, price = 10, name = "Water"},
+    Product {prodId = 8, price = 7, name = "Latte"},
+    Product {prodId = 6, price = 5, name = "Apple"},
+    Product {prodId = 7, price = 7, name = "Juice"},
+    Product {prodId = 5, price = 10, name = "Ice Cream"},
+    Product {prodId = 3, price = 7, name = "Hennesy"}
+  ]
+
+-- (price, Product)
+groupBy :: (Eq b) => (a -> b) -> [a] -> [[a]]
+groupBy f xs = foldr (\curr acc -> snd curr : acc) [] $ foldr step [] xs
   where
-    post ([], yss) = yss
-    post (xs, yss) = xs : yss
+    step curr acc
+      | haveKeyInGroup (f curr) acc = addInGroup curr acc
+      | otherwise = (f curr, [curr]) : acc
 
-    fn a ([], yss) = ([a], yss)
-    fn a (b : bs, yss)
-      | cond a b = (a : b : bs, yss)
-      | otherwise = ([a], (b : bs) : yss)
+    haveKeyInGroup :: Eq a => a -> [(a, b)] -> Bool
+    haveKeyInGroup key = foldr (\x xs -> fst x == key || xs) False
+
+    addInGroup curr =
+      foldr
+        ( \xs xss ->
+            if fst xs == f curr
+              then (f curr, curr : snd xs) : xss
+              else xs : xss
+        )
+        []
+
+-- [(10, IceCream),(7,Hennesy, Juice)]
 
 foldTest :: IO ()
 foldTest = do
@@ -270,21 +307,11 @@ foldTest = do
   putStr "concat [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]] = "
   print (show (concat [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]]))
   putStrLn ""
-  putStr "groupBy [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13]] = "
-  print (show (groupBy (\x y -> (x * y `mod` 3) == 0) [1, 2, 3, 4, 5, 6, 7, 8, 9]))
+  putStrLn "groupBy price [Korona Extra, Biver, Water, Ice Cream, Apple, Juice, Latte, Hennesy] = "
   putStrLn ""
-  putStr "groupBy [Korona Extra, Biver, Water, Ice Cream, Apple, Juice, Latte, Hennesy] = "
-  print (show (groupBy (==) ord))
+  print (show (groupBy price ord))
   putStrLn ""
 
-ord :: [Product]
-ord =
-  [ Product {prodId = 1, price = 100, name = "Korona Extra"},
-    Product {prodId = 2, price = 100, name = "Biver"},
-    Product {prodId = 4, price = 1000, name = "Water"},
-    Product {prodId = 5, price = 1000, name = "Ice Cream"},
-    Product {prodId = 6, price = 500, name = "Apple"},
-    Product {prodId = 7, price = 750, name = "Juice"},
-    Product {prodId = 8, price = 750, name = "Latte"},
-    Product {prodId = 3, price = 750, name = "Hennesy"}
-  ]
+-- putStr "groupBy (x y -> (x * y `mod` 3) [1, 2, 3, 4, 5, 6, 7, 8, 9] = "
+-- print (show (groupBy (==) ord))
+-- putStrLn ""
