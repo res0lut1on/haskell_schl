@@ -62,7 +62,9 @@ data Shop = Shop
     shopName :: String,
     shopAddress :: String
   }
-  deriving (Show)
+
+instance Show Shop where
+  show (Shop _ n _) = n
 
 instance Eq Shop where
   (==) :: Shop -> Shop -> Bool

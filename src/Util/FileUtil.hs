@@ -1,10 +1,13 @@
 {-# OPTIONS_GHC -Wno-missing-fields #-}
+{-# LANGUAGE InstanceSigs #-}
+
 module Util.FileUtil
   ( readAllCustomers,
     readAllProducts,
     readAllShops,
     readAllOrders,
     readAllProductOrder,
+    readEntityData,
     removeCust,
     initDataBase,
     addCust,
@@ -21,11 +24,17 @@ module Util.FileUtil
     removeShp,
     removeOrd,
     removeProd,
+    mappShopFromTxt,
+    mappShopToTxt,
+    writeCustWhile,
+    writeShopWhile,
+    EntityContent,
   )
 where
 
 import Control.Monad
 import Data.Char
+import Data.CommonData (Color (White))
 import Data.Context
 import Data.Entities
 import Data.List
@@ -34,7 +43,6 @@ import GHC.IO.Handle
 import Lib (remove, split)
 import LibFold (add, whileDo)
 import System.IO
-import Data.CommonData (Color(White))
 
 ----------------------------------------------------------------------------------------------------------------------
 -- kaskdnayo
@@ -230,8 +238,8 @@ initDataBase =
 
 --------------------------------------------------------------------------------------------------------------------------
 
-readEntity :: EntityName -> IO EntityContent
-readEntity entityName
+readEntityData :: EntityName -> IO EntityContent
+readEntityData entityName
   | entityName == "customers" =
       do
         inh <- openFile getRelativePathToCustomers ReadMode
@@ -271,32 +279,53 @@ readEntity entityName
 readAllCustomers :: IO [Customer]
 readAllCustomers =
   do
-    contents <- readEntity "customers"
+    contents <- readEntityData "customers"
     return $ map mappCustFromTxt (lines contents)
 
 readAllProducts :: IO [Product]
 readAllProducts =
   do
-    contents <- readEntity "products"
+    contents <- readEntityData "products"
     return $ map mappProdFromTxt (lines contents)
 
 readAllShops :: IO [Shop]
 readAllShops =
   do
-    contents <- readEntity "shops"
+    contents <- readEntityData "shops"
     return $ map mappShopFromTxt (lines contents)
 
 readAllOrders :: IO [Order]
 readAllOrders =
   do
-    contents <- readEntity "orders"
+    contents <- readEntityData "orders"
     return $ map mappOrderFromTxt (lines contents)
 
 readAllProductOrder :: IO [ProductOrder]
 readAllProductOrder =
   do
-    contents <- readEntity "productOrder"
+    contents <- readEntityData "productOrder"
     return $ map mappProdOrdFromTxt (lines contents)
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+-- readEntity :: EntityName -> IO [a]
+-- readEntity entityName
+--   | entityName == "customers" =
+--       do
+--         readAllCustomers
+--   | entityName == "products" =
+--       do
+--         readAllProducts
+--   | entityName == "orders" =
+--       do
+--         readAllOrders
+--   | entityName == "shops" =
+--       do
+--         readAllShops
+--   | otherwise =
+--       do
+--         readAllProductOrder
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
