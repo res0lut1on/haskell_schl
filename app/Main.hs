@@ -3,7 +3,7 @@ module Main (main) where
 import LibFold
 
 main :: IO ()
-main = print
+main = return ()
 
 
 

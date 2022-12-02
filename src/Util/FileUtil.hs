@@ -1,5 +1,6 @@
-{-# OPTIONS_GHC -Wno-missing-fields #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# OPTIONS_GHC -Wno-missing-fields #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Util.FileUtil
   ( readAllCustomers,
@@ -26,26 +27,29 @@ module Util.FileUtil
     removeProd,
     mappShopFromTxt,
     mappShopToTxt,
+    mappCustFromTxt,
+    mappCustToTxt,
     writeCustWhile,
     writeShopWhile,
     EntityContent,
+    writeEntWhile,
+    addEnt,
   )
 where
 
 import Control.Monad
-import Data.Char
 import Data.CommonData (Color (White))
 import Data.Context
 import Data.Entities
-import Data.List
-import GHC.Base (IO (IO))
+import Data.RepEntity.BaseEntity
 import GHC.IO.Handle
 import Lib (remove, split)
-import LibFold (add, whileDo)
+import LibFold (add)
+import Mapping.MappingTxt
 import System.IO
 
 ----------------------------------------------------------------------------------------------------------------------
--- kaskdnayo
+
 getRelativePathToHere :: FilePath
 getRelativePathToHere = "/home/pineapple/doc/project_cabal/src/Data/ContextTxt"
 
@@ -227,54 +231,65 @@ writeProductOrder prodOrd =
         hPutStrLn outh (mappProductOrderToTxt prodOrd)
         return ()
 
-initDataBase :: IO ()
-initDataBase =
-  do
-    writeCustWhile сustomers
-    writeProdWhile products
-    writeShopWhile shops
-    writeOrderWhile orders
-    writeProductOrder productOrder
-
 --------------------------------------------------------------------------------------------------------------------------
 
+writeEntWhile :: (BaseEntity a, MappEntity a) => [a] -> IO ()
+writeEntWhile ents =
+  do
+    outh <- openFile (getRelativePathToHere ++ "/" ++ entName (head ents)) WriteMode
+    forM_
+      ents
+      ( \a ->
+          do
+            entloop a outh
+      )
+    hClose outh
+  where
+    entloop es outh =
+      do
+        hPutStrLn outh (mappEntityTo es)
+        return ()
+
 readEntityData :: EntityName -> IO EntityContent
-readEntityData entityName
-  | entityName == "customers" =
-      do
-        inh <- openFile getRelativePathToCustomers ReadMode
-        contents <- hGetContents inh
-        putStrLn contents
-        hClose inh
-        return contents
-  | entityName == "products" =
-      do
-        inh <- openFile getRelativePathToProducts ReadMode
-        contents <- hGetContents inh
-        putStrLn contents
-        hClose inh
-        return contents
-  | entityName == "orders" =
-      do
-        inh <- openFile getRelativePathToOrders ReadMode
-        contents <- hGetContents inh
-        putStrLn contents
-        hClose inh
-        return contents
-  | entityName == "shops" =
-      do
-        inh <- openFile getRelativePathToShops ReadMode
-        contents <- hGetContents inh
-        putStrLn contents
-        hClose inh
-        return contents
-  | otherwise =
-      do
-        inh <- openFile getRelativePathToProductOrder ReadMode
-        contents <- hGetContents inh
-        putStrLn contents
-        hClose inh
-        return contents
+readEntityData entityName =
+  do
+    inh <- openFile (getRelativePathToHere ++ "/" ++ entityName ++ ".txt") ReadMode -- Тогда нужно будет создать только файл с именем сущности
+    contents <- hGetContents inh
+    putStrLn contents
+    hClose inh
+    return contents
+
+instance MappEntity Customer where
+  mappEntityTo :: Customer -> String
+  mappEntityTo = mappCustToTxt
+  mappEntityFrom :: String -> Customer
+  mappEntityFrom = mappCustFromTxt
+
+instance MappEntity Shop where
+  mappEntityTo :: Shop -> String
+  mappEntityTo = mappShopToTxt
+  mappEntityFrom :: String -> Shop
+  mappEntityFrom = mappShopFromTxt
+
+instance MappEntity Product where
+  mappEntityTo :: Product -> String
+  mappEntityTo = mappProdToTxt
+  mappEntityFrom :: String -> Product
+  mappEntityFrom = mappProdFromTxt
+
+instance MappEntity Order where
+  mappEntityTo :: Order -> String
+  mappEntityTo = mappOrderToTxt
+  mappEntityFrom :: String -> Order
+  mappEntityFrom = mappOrderFromTxt
+
+instance MappEntity ProductOrder where
+  mappEntityTo :: ProductOrder -> String
+  mappEntityTo = mappProductOrderToTxt
+  mappEntityFrom :: String -> ProductOrder
+  mappEntityFrom = mappProdOrdFromTxt
+
+---------------------------------------------------------------------------------------------------------------------------
 
 readAllCustomers :: IO [Customer]
 readAllCustomers =
@@ -305,27 +320,6 @@ readAllProductOrder =
   do
     contents <- readEntityData "productOrder"
     return $ map mappProdOrdFromTxt (lines contents)
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
--- readEntity :: EntityName -> IO [a]
--- readEntity entityName
---   | entityName == "customers" =
---       do
---         readAllCustomers
---   | entityName == "products" =
---       do
---         readAllProducts
---   | entityName == "orders" =
---       do
---         readAllOrders
---   | entityName == "shops" =
---       do
---         readAllShops
---   | otherwise =
---       do
---         readAllProductOrder
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -343,6 +337,9 @@ addOrd o = appendFile getRelativePathToOrders (mappOrderToTxt o)
 
 addProdOrd :: ProductOrder -> IO ()
 addProdOrd po = appendFile getRelativePathToProductOrder (mappProductOrderToTxt po)
+
+addEnt :: (MappEntity a, BaseEntity a) => a -> IO ()
+addEnt ent = appendFile (getRelativePathToHere ++ "/" ++ entName ent) (mappEntityTo (entType ent))
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -414,6 +411,15 @@ updateProdOrd new =
 -- "2|Jimmy|Heston, UK"
 -- "3|David|Cambrige, UK"
 
+initDataBase :: IO ()
+initDataBase =
+  do
+    writeCustWhile сustomers
+    writeProdWhile products
+    writeShopWhile shops
+    writeOrderWhile orders
+    writeProductOrder productOrder
+
 readCustId :: Int -> IO Customer
 readCustId custId =
   do
@@ -435,3 +441,59 @@ checkCust =
       customerName = "Bob",
       customerAddress = "Brugge"
     }
+
+-- readEntity :: EntityName -> IO [a]
+-- readEntity entityName
+--   | entityName == "customers" =
+--       do
+--         readAllCustomers
+--   | entityName == "products" =
+--       do
+--         readAllProducts
+--   | entityName == "orders" =
+--       do
+--         readAllOrders
+--   | entityName == "shops" =
+--       do
+--         readAllShops
+--   | otherwise =
+--       do
+--         readAllProductOrder
+
+-- readEntityData :: EntityName -> IO EntityContent
+-- readEntityData entityName
+--   | entityName == "customers" =
+--       do
+--         inh <- openFile getRelativePathToCustomers ReadMode
+--         contents <- hGetContents inh
+--         putStrLn contents
+--         hClose inh
+--         return contents
+--   | entityName == "products" =
+--       do
+--         inh <- openFile getRelativePathToProducts ReadMode
+--         contents <- hGetContents inh
+--         putStrLn contents
+--         hClose inh
+--         return contents
+--   | entityName == "orders" =
+--       do
+--         inh <- openFile getRelativePathToOrders ReadMode
+--         contents <- hGetContents inh
+--         putStrLn contents
+--         hClose inh
+--         return contents
+--   | entityName == "shops" =
+--       do
+--         inh <- openFile getRelativePathToShops ReadMode
+--         contents <- hGetContents inh
+--         putStrLn contents
+--         hClose inh
+--         return contents
+--   | otherwise =
+--       do
+--         inh <- openFile getRelativePathToProductOrder ReadMode
+--         contents <- hGetContents inh
+--         putStrLn contents
+--         hClose inh
+--         return contents
