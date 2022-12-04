@@ -3,11 +3,11 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module Data.RepEntity.BaseEntity (BaseEntity (..),EntityName) where
+module Data.RepEntity.BaseEntity (BaseEntity (..), EntityName(..)) where
 
 import Data.Entities
 
-data EntityType = Products | Shops | Customers | Orders | ProductToOrders
+data EntityType = Products | Shops | Customers | Orders
   deriving (Read, Show)
 
 class BaseEntity a where
@@ -42,6 +42,8 @@ instance BaseEntity Shop where
   entId (Shop sId _ _) = sId
   changeId :: Shop -> Int -> Shop
   changeId shp newId = shp {shopId = newId}
+  entityName :: EntityName Shop
+  entityName = EntityName $ show Shops
 
 instance BaseEntity Product where
   entName :: a -> String
@@ -52,6 +54,8 @@ instance BaseEntity Product where
   entId (Product pId _ _ _ _) = pId
   changeId :: Product -> Int -> Product
   changeId prd newId = Product newId (productShopId prd) (productName prd) (productPrice prd) (productColor prd)
+  entityName :: EntityName Product
+  entityName = EntityName $ show Products
 
 instance BaseEntity Order where
   entName :: a -> String
@@ -62,6 +66,8 @@ instance BaseEntity Order where
   entId (Order oId _ _) = oId
   changeId :: Order -> Int -> Order
   changeId ord newId = ord {orderId = newId}
+  entityName :: EntityName Order
+  entityName = EntityName $ show Orders
 
 instance BaseEntity ProductOrder where
   entName :: a -> String
@@ -72,3 +78,5 @@ instance BaseEntity ProductOrder where
   entId (ProductOrder oId _ _) = oId
   changeId :: ProductOrder -> Int -> ProductOrder
   changeId pd newId = pd {poId = newId}
+  entityName :: EntityName ProductOrder
+  entityName = EntityName "ProductOrder"

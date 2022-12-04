@@ -1,10 +1,11 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Mapping.ReadWriteEntityClass (ReadWriteDataEntity (..)) where
+module ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..)) where
 
-import Data.RepEntity.BaseEntity
+import Data.RepEntity.BaseEntity (BaseEntity(..))
 import Mapping.MappingTxt
 import Util.FileUtil
+import Lib
 
 class (BaseEntity a, MappEntity a) => ReadWriteDataEntity a where
   addNewEnt :: a -> Int -> IO ()
@@ -14,5 +15,5 @@ class (BaseEntity a, MappEntity a) => ReadWriteDataEntity a where
   readAllDataEntity :: String -> IO [a]
   readAllDataEntity ent =
     do
-      contents <- readEntityData ent 
-      return $ map mappEntityFrom (lines contents)
+      contents <- readEntityData ent
+      return $ Lib.map mappEntityFrom (lines contents)

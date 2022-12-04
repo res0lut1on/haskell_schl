@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Mapping.ReadWriteProductOrder () where
+module ReadWrite.ReadWriteProductOrder () where
 
 import Data.Entities (ProductOrder)
-import Mapping.ReadWriteEntityClass (ReadWriteDataEntity)
+import ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity)
 
 instance ReadWriteDataEntity ProductOrder

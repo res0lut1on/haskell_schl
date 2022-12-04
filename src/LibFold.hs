@@ -1,6 +1,7 @@
+{-# HLINT ignore "Use map" #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-{-# HLINT ignore "Use map" #-}
 module LibFold
   ( module Prelude,
     foldl,
@@ -33,16 +34,19 @@ module LibFold
     take,
     foldTest,
     whileDo,
+    addInTheEnd,
+    toLowerCase,
   )
 where
 
 import Prelude hiding (add, all, any, concat, elem, filter, flip, foldl, foldl', foldr, for, groupBy, init, map, max, min, reduce, reverse, seq, sum, take, until)
+import Data.Char (toLower)
 
 max :: Ord a => [a] -> a
 max (x : xs) = foldl (\acc curr -> if curr > acc then curr else acc) x xs
 
 concat :: [[a]] -> [a]
-concat = reverse . foldl (\acc curr -> append curr acc) []
+concat = reverse . foldl (flip append) []
   where
     append [] xs = xs
     append (e : es) xs = append es (e : xs)
@@ -51,30 +55,16 @@ foldl :: (a -> b -> a) -> a -> [b] -> a
 foldl _ init [] = init
 foldl f init (x : xs) = foldl f (f init x) xs
 
---      [1]   2  [3,4]             [1]  2  [3,4]
---      [2,1] 3  [4]               [2,1] 3  [4]
---    [3,2,1] 4  [ ]            [3,2,1] 4  []
---  [4,3,2,1] [] [ ]    ------[4,3,2,1]------
-
 para :: (a -> [a] -> b -> b) -> b -> [a] -> b
 para c n (x : xs) = c x xs (para c n xs)
---    + 1  2  [3,4]  + 2 [3,4]    + 1 [3,4]
---    + 1  3  [4]    + 3 [4]      + 1 [4]
---    + 1  4  []     + 4 []      ---1---
 para _ n [] = n
 
+foldrp :: (t1 -> t2 -> t2) -> t2 -> [t1] -> t2
 foldrp c = para (\curr _ acc -> c curr acc)
-
---     + 1 [2,3,4]
 
 foldr :: (a -> b -> b) -> b -> [a] -> b
 foldr _ init [] = init
 foldr f init (x : xs) = f x (foldr f init xs)
-
---      [1]   2  [3,4]    2          [1] [3,4]
---      [1]   3  [4]      3          [1] [4]
---      [1]   4  []      4           [1] []
---      [1]      []          ------[1]------
 
 foldl' :: (a -> b -> a) -> a -> [b] -> a
 foldl' _ z [] = z
@@ -96,6 +86,9 @@ seq _ b = b
 
 add :: a -> [a] -> [a]
 add elem xs = elem : foldr (:) [] xs
+
+addInTheEnd :: t -> [t] -> [t]
+addInTheEnd a = foldr (:) [a]
 
 flip :: (a -> b -> c) -> b -> a -> c
 flip f x y = f y x
@@ -161,6 +154,10 @@ remove elem xs = foldr g z xs elem
       | otherwise = x : r i
     z _ = []
 
+toLowerCase::String -> String
+toLowerCase (x:xs) = toLower x : toLowerCase xs
+toLowerCase [] = []
+
 insert :: (Eq a1, Num a1) => a2 -> a1 -> [a2] -> [a2]
 insert elem pos xs = foldr g z xs pos
   where
@@ -178,17 +175,6 @@ skip n xs = foldr g z xs 0 xs
       | otherwise = r (i + 1) t
     z _ _ = []
 
--- groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
--- groupBy cond = post . foldr fn ([], [])
---   where
---     post ([], yss) = yss
---     post (xs, yss) = xs : yss
-
---     fn a ([], yss) = ([a], yss)
---     fn a (b : bs, yss)
---       | cond a b = (a : b : bs, yss)
---       | otherwise = ([a], (b : bs) : yss)
-
 data Product = Product
   { prodId :: Int,
     name :: String,
@@ -196,9 +182,11 @@ data Product = Product
   }
 
 instance Eq Product where
+  (==) :: Product -> Product -> Bool
   x == y = price x == price y
 
 instance Show Product where
+  show :: Product -> String
   show (Product _ n pr) = n ++ " = " ++ show pr
 
 ord :: [Product]
@@ -213,7 +201,6 @@ ord =
     Product {prodId = 3, price = 7, name = "Hennesy"}
   ]
 
--- (price, Product)
 groupBy :: (Eq b) => (a -> b) -> [a] -> [[a]]
 groupBy f xs = foldr (\curr acc -> snd curr : acc) [] $ foldr step [] xs
   where
@@ -232,8 +219,6 @@ groupBy f xs = foldr (\curr acc -> snd curr : acc) [] $ foldr step [] xs
               else xs : xss
         )
         []
-
--- [(10, IceCream),(7,Hennesy, Juice)]
 
 foldTest :: IO ()
 foldTest = do
@@ -311,7 +296,3 @@ foldTest = do
   putStrLn ""
   print (show (groupBy price ord))
   putStrLn ""
-
--- putStr "groupBy (x y -> (x * y `mod` 3) [1, 2, 3, 4, 5, 6, 7, 8, 9] = "
--- print (show (groupBy (==) ord))
--- putStrLn ""
