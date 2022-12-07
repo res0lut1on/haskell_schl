@@ -30,6 +30,9 @@ productModelPrice (ProductModel _ _ _ pmp _) = pmp
 productModelColor :: ProductModel -> Color
 productModelColor (ProductModel _ _ _ _ color) = color
 
+instance Show ProductModel where
+  show (ProductModel item1 item2 item3 item4 _) = show item1 ++ ", " ++ show item2 ++ ", " ++ item3 ++ ", " ++ show item4 ++ "\n"
+
 data ShopModel = ShopModel
   { shopModelId :: Int,
     shopModelName :: String,
@@ -47,6 +50,9 @@ data OrderModel = OrderModel
     orderProducts :: Maybe [ProductModel]
   }
 
+instance Show OrderModel where
+  show (OrderModel item1 item2 item3 item4) = show item1 ++ ", " ++ show item2 ++ ", " ++ item3 ++ ", " ++ show item4
+
 data CustomerModel = CustomerModel
   { customerModelId :: Int,
     customerModelName :: String,
@@ -55,3 +61,5 @@ data CustomerModel = CustomerModel
   }
 instance Show CustomerModel where
   show (CustomerModel item1 item2 item3 _) = "\n" ++ show item1 ++ ", " ++ item2 ++ ", " ++ item3
+
+

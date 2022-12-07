@@ -1,23 +1,19 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Services.ShopServices (getModelShops, getModelShopById, addModelShop, removeModelShop, editModelShop) where
 
+import Data.Entities
 import Data.Models (ShopModel)
 import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
-import Repositories.ProductRepository (getProductsByShop)
-import Repositories.ShopRepository
-  ( addShop,
-    getShopById,
-    removeShop,
-    updateShop,
-  )
-import qualified Repositories.ShopRepository as ShopRepository
+import Repositories.GenericRepository
 
 getModelShops :: IO [ShopModel]
-getModelShops = map (`mappingShopToModel` Nothing) <$> ShopRepository.getShops
+getModelShops = map (`mappingShopToModel` Nothing) <$> getList
 
 getModelShopById :: Int -> IO (Maybe ShopModel)
 getModelShopById smId =
   do
-    shop <- getShopById smId
+    shop <- getEntityById smId
     case shop of
       Nothing -> return Nothing
       Just value ->
@@ -26,10 +22,10 @@ getModelShopById smId =
           return $ Just $ mappingShopToModel value (Just prods)
 
 addModelShop :: ShopModel -> IO Int
-addModelShop item = addShop $ mappingModelToShop item
+addModelShop item = addEntity $ mappingModelToShop item
 
 removeModelShop :: Int -> IO ()
-removeModelShop = removeShop
+removeModelShop = removeEid @Shop
 
 editModelShop :: ShopModel -> IO ()
-editModelShop item = updateShop $ mappingModelToShop item
+editModelShop item = editEntity $ mappingModelToShop item

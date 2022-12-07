@@ -1,17 +1,16 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer) where
 
 import Data.Entities (Customer (customerId))
 import Data.Models (CustomerModel)
 import Mapping.Mapping (mappingCustomerToModel, mappingModelToCustomer)
-import Repositories.CustomersRepository (addCustomer, getCustomerById, removeCustomer, updateCustomer)
-import qualified Repositories.CustomersRepository as CustomersRepository
-import Repositories.OrderRepository (getOrdersByCustomerId)
-import Repositories.ProductRepository (getProductsWithOrdersId)
+import Repositories.GenericRepository
 
 getModelCustomers :: IO [CustomerModel]
 getModelCustomers =
   do
-    custs <- CustomersRepository.getCustomers
+    custs <- getList
     mapM
       ( \o ->
           do
@@ -24,17 +23,17 @@ getModelCustomerById :: Int -> IO (Maybe CustomerModel)
 getModelCustomerById custId =
   do
     orders <- getOrdersByCustomerId custId
-    customer <- getCustomerById custId
+    customer <- getEntityById custId
     prods <- getProductsWithOrdersId
     case customer of
       Nothing -> return Nothing
       Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
 
 addModelCustomer :: CustomerModel -> IO Int
-addModelCustomer newCust = addCustomer $ mappingModelToCustomer newCust
+addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust
 
 removeModelCustomer :: Int -> IO ()
-removeModelCustomer = removeCustomer
+removeModelCustomer = removeEid @Customer
 
 editModelCustomer :: CustomerModel -> IO ()
-editModelCustomer newCust = updateCustomer $ mappingModelToCustomer newCust
+editModelCustomer newCust = editEntity $ mappingModelToCustomer newCust

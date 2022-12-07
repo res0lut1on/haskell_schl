@@ -1,19 +1,19 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Services.OrderServices (getOrders, getModelOrderById, addModelOrder, removeModelOrder, editModelOrder) where
 
+import Data.Entities
 import Data.Models (OrderModel)
 import Mapping.Mapping (mappingModelToOrder, mappingOrderToModel)
-import Repositories.CustomersRepository (getCustomerByOrderId, getCustomers)
-import Repositories.OrderRepository (addOrder, getOrd, getOrderById, removeOrder, updateOrder)
-import Repositories.ProductRepository (getProductsByOrderId)
-import Util.FileUtil
+import Repositories.GenericRepository
 
 getOrders :: IO [OrderModel]
-getOrders = map (\o -> mappingOrderToModel o Nothing Nothing) <$> Repositories.OrderRepository.getOrd
+getOrders = map (\o -> mappingOrderToModel o Nothing Nothing) <$> getList
 
 getModelOrderById :: Int -> IO (Maybe OrderModel)
 getModelOrderById orderID =
   do
-    order <- getOrderById orderID
+    order <- getEntityById orderID
     customer <- getCustomerByOrderId orderID
     products <- getProductsByOrderId orderID
     case order of
@@ -21,10 +21,10 @@ getModelOrderById orderID =
       Just value -> return $ Just $ mappingOrderToModel value (Just products) customer
 
 addModelOrder :: OrderModel -> IO Int
-addModelOrder item = addOrder $ mappingModelToOrder item
+addModelOrder item = addEntity $ mappingModelToOrder item
 
 removeModelOrder :: Int -> IO ()
-removeModelOrder = removeOrder
+removeModelOrder = removeEid @Order
 
 editModelOrder :: OrderModel -> IO ()
-editModelOrder item = updateOrder $ mappingModelToOrder item
+editModelOrder item = editEntity $ mappingModelToOrder item

@@ -1,30 +1,34 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Services.ProductServices (getModelProducts, getModelProductById, addModelProduct, removeModelProduct, editModelProduct) where
 
 import Data.Entities
 import Data.Models (ProductModel)
 import Mapping.Mapping
-import Repositories.ProductRepository
-import Repositories.ShopRepository
+  ( mappingModelToProduct,
+    mappingProductToModel,
+  )
+import Repositories.GenericRepository
 
 getModelProducts :: IO [ProductModel]
-getModelProducts = map (`mappingProductToModel` Nothing) <$> Repositories.ProductRepository.getProducts
+getModelProducts = map (`mappingProductToModel` Nothing) <$> getList
 
 getModelProductById :: Int -> IO (Maybe ProductModel)
 getModelProductById prID =
   do
-    prod <- getProductById prID
+    prod <- getEntityById prID
     case prod of
       Nothing -> return Nothing
       Just value ->
         do
-          shp <- getShopById $ productShopId value
+          shp <- getEntityById $ productShopId value
           return $ Just $ mappingProductToModel value shp
 
 addModelProduct :: ProductModel -> IO Int
-addModelProduct item = addProduct $ mappingModelToProduct item
+addModelProduct item = addEntity $ mappingModelToProduct item
 
 removeModelProduct :: Int -> IO ()
-removeModelProduct = removeProduct
+removeModelProduct = removeEid @Product
 
 editModelProduct :: ProductModel -> IO ()
-editModelProduct item = updateProduct $ mappingModelToProduct item
+editModelProduct item = editEntity $ mappingModelToProduct item

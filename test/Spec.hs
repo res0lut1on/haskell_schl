@@ -4,18 +4,11 @@ module Spec
   )
 where
 
-import LibFold
-
-import Repositories.CustomersRepository
-import Repositories.OrderRepository
-import Repositories.ProductRepository
-import Repositories.ShopRepository
-
-import Data.Models
-
-import Services.CustomerServices
-
 import Data.Entities
+import Data.Models
+import LibFold
+import Repositories.GenericRepository
+import Services.EntityServices
 import Util.FileUtil
 
 busTest :: IO ()
@@ -24,94 +17,55 @@ busTest = do
   putStrLn ""
   putStrLn "All Customers"
   putStrLn ""
-  out <- getCustomers
+  out <- getModelCustomers
   print (out)
   putStrLn ""
   putStrLn "Customer, id = 2 "
   putStrLn ""
-  out <- getCustomerById 2
+  out <- getModelCustomerById 2
   print (out)
   putStrLn ""
   putStrLn "All Product"
   putStrLn ""
-  out <- getProducts
+  out <- getModelProducts
   print (out)
   putStrLn ""
   putStrLn "Product, id = 3"
   putStrLn ""
-  out <- getProductById 3
+  out <- getModelProductById 3
   print (out)
   putStrLn ""
   putStrLn "All Shops"
   putStrLn ""
-  out <- getShops
+  out <- getModelShops
   print (out)
   putStrLn ""
   putStrLn "Shop, id = 3"
   putStrLn ""
-  out <- getShopById 1
+  out <- getModelShopById 1
   print (out)
   putStrLn ""
   putStrLn "All Orders"
   putStrLn ""
-  out <- getOrd
+  out <- getOrders
   print (out)
   putStrLn ""
-  putStrLn "Order, id = 2"
+  putStrLn "Order, id = 3"
   putStrLn ""
-  out <- getOrderById 2
+  out <- getModelOrderById 3
   print (out)
   putStrLn ""
   putStrLn "Delete Customer, id = 2"
-  removeCustomer 2      
-  out <- readAllCustomers
+  removeModelCustomer 2
+  out <- getModelCustomers
   print out
   putStrLn ""
   putStrLn "Add Customer"
-  addCustomer (Customer{customerName = "Bob", customerId = 2, customerAddress = "Brugge"})
+  out <- addModelCustomer (CustomerModel {customerModelName = "Bob", customerModelId = 2, customerModelAddress = "Brugge", customerModelOrders = Nothing})
+  print out
   putStrLn ""
-  out <- readAllCustomers
+  out <- getModelCustomers
   putStrLn ""
   print out
   initDataBase
   putStrLn ""
-  putStrLn "All Model Customer"
-  putStrLn ""
-  out <- getModelCustomers
-  print out
-  putStrLn ""
-  putStrLn "Add Model Customer"
-  putStrLn ""
-  addModelCustomer (CustomerModel {
-    customerModelId = 43,
-    customerModelAddress = "Kochka",
-    customerModelName = "Killreal",
-    customerModelOrders = Nothing
-  })
-  out <- getModelCustomers
-  print out 
-  out <- getCustomers
-  print out 
-   
-  putStrLn ""
-  
--- data OrderModel = OrderModel
---   { orderModelId :: Int,
---     orderModelCustomer :: Maybe CustomerModel,
---     orderModelNumber :: String,
---     orderProducts :: Maybe [ProductModel]
---   }
-
-  -- putStrLn "Order List for Customer id = 3"
-  -- putStrLn ""
-  -- print (getOrdersByCustomerId 3)
-  -- putStrLn ""
-  -- putStrLn "Product List for Order id = 3"
-  -- putStrLn ""
-  -- print (getProductsByOrderId 4)
-  -- putStrLn ""
-  -- putStrLn ""
-  -- print (sum [1,2,3,4])
-  -- putStrLn ""
-
-
