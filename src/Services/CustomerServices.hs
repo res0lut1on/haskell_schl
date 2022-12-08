@@ -9,25 +9,22 @@ import Repositories.GenericRepository
 
 getModelCustomers :: IO [CustomerModel]
 getModelCustomers =
-  do
-    custs <- getList
-    mapM
+  getList
+    >>= mapM
       ( \o ->
-          do
-            ord <- getOrdersByCustomerId (customerId o)
+          getOrdersByCustomerId (customerId o) >>= \ord ->
             mappingCustomerToModel o (Just ord) . Just <$> getProductsWithOrdersId
       )
-      custs
 
 getModelCustomerById :: Int -> IO (Maybe CustomerModel)
 getModelCustomerById custId =
-  do
-    orders <- getOrdersByCustomerId custId
-    customer <- getEntityById custId
-    prods <- getProductsWithOrdersId
-    case customer of
-      Nothing -> return Nothing
-      Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
+  getOrdersByCustomerId custId >>= \orders ->
+    getEntityById custId
+      >>= \customer ->
+        getProductsWithOrdersId >>= \prods ->
+          case customer of
+            Nothing -> return Nothing
+            Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
 
 addModelCustomer :: CustomerModel -> IO Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust

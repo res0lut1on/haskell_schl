@@ -12,13 +12,12 @@ getOrders = map (\o -> mappingOrderToModel o Nothing Nothing) <$> getList
 
 getModelOrderById :: Int -> IO (Maybe OrderModel)
 getModelOrderById orderID =
-  do
-    order <- getEntityById orderID
-    customer <- getCustomerByOrderId orderID
-    products <- getProductsByOrderId orderID
-    case order of
-      Nothing -> return Nothing
-      Just value -> return $ Just $ mappingOrderToModel value (Just products) customer
+  getEntityById orderID >>= \order ->
+    getCustomerByOrderId orderID >>= \customer ->
+      getProductsByOrderId orderID >>= \products ->
+        case order of
+          Nothing -> return Nothing
+          Just value -> return $ Just $ mappingOrderToModel value (Just products) customer
 
 addModelOrder :: OrderModel -> IO Int
 addModelOrder item = addEntity $ mappingModelToOrder item

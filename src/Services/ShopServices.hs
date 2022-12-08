@@ -1,4 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use lambda-case" #-}
 
 module Services.ShopServices (getModelShops, getModelShopById, addModelShop, removeModelShop, editModelShop) where
 
@@ -12,13 +15,11 @@ getModelShops = map (`mappingShopToModel` Nothing) <$> getList
 
 getModelShopById :: Int -> IO (Maybe ShopModel)
 getModelShopById smId =
-  do
-    shop <- getEntityById smId
+  getEntityById smId >>= \shop ->
     case shop of
       Nothing -> return Nothing
       Just value ->
-        do
-          prods <- getProductsByShop value
+        getProductsByShop value >>= \prods ->
           return $ Just $ mappingShopToModel value (Just prods)
 
 addModelShop :: ShopModel -> IO Int
