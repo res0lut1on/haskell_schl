@@ -26,6 +26,14 @@ getModelCustomerById custId =
             Nothing -> return Nothing
             Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
 
+-- getModelCustomerById :: Int -> IO (Maybe CustomerModel)
+-- getModelCustomerById custId =
+--     getEntityById custId >>= \customer ->
+--           case customer of
+--             Nothing -> return Nothing
+--             --Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
+--             Just value ->  return $ Just $ mappingCustomerToModel <$> value <*> (Just <$> getOrdersByCustomerId 1) <*> (Just <$> getEntityById custId)
+
 addModelCustomer :: CustomerModel -> IO Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust
 

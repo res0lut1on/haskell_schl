@@ -20,8 +20,9 @@ class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
   getEntityById eid = maybeHead . filter (\e -> entId e == eid) <$> getList
 
   addEntity :: a -> IO Int
-  addEntity entity = (getList :: IO [a]) >>= ((\newId -> (\_ -> return newId) (addNewEnt (entType entity) newId)) . getLastId)
+  addEntity entity = (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a])
 
+  -- (getList :: IO [a]) >>= ((\newId -> (\_ -> return newId) (addNewEnt (entType entity) newId)) . getLastId)
   removeEid :: Int -> IO ()
   removeEid eid = (getList :: IO [a]) >>= (writeAllDataEntity . filter (\a -> entId a /= eid))
 

@@ -15,4 +15,4 @@ getCustomerByOrder (Order _ custId _) = getEntityById custId
 
 getCustomerByOrderId :: Int -> IO (Maybe Customer)
 getCustomerByOrderId orderID =
-  (getList @Order) >>= \ords -> getCustomerByOrder $ head (filter (\x -> orderId x == orderID) ords)
+  (getList @Order) >>= (getCustomerByOrder . head) . filter (\x -> orderId x == orderID)
