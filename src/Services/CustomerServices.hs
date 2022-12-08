@@ -1,11 +1,14 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer) where
+module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer, searchProducts) where
 
-import Data.Entities (Customer (customerId))
+import Data.Entities (Customer (customerAddress, customerId, customerName))
+import Data.List
 import Data.Models (CustomerModel)
+import Data.SearchModel (CustomerSearchModel (customerSearchModelAddress, customerSearchModelName))
 import Mapping.Mapping (mappingCustomerToModel, mappingModelToCustomer)
 import Repositories.GenericRepository
+import Services.ApplyFilter
 
 getModelCustomers :: IO [CustomerModel]
 getModelCustomers =
@@ -20,19 +23,14 @@ getModelCustomerById :: Int -> IO (Maybe CustomerModel)
 getModelCustomerById custId =
   getOrdersByCustomerId custId >>= \orders ->
     getEntityById custId
-      >>= \customer ->
+      >>= \maybeCustomer ->
         getProductsWithOrdersId >>= \prods ->
-          case customer of
-            Nothing -> return Nothing
-            Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
+          return $
+            maybeCustomer >>= \customer ->
+              return $ mappingCustomerToModel customer (return orders) (return prods)
 
 -- getModelCustomerById :: Int -> IO (Maybe CustomerModel)
--- getModelCustomerById custId =
---     getEntityById custId >>= \customer ->
---           case customer of
---             Nothing -> return Nothing
---             --Just value -> return $ Just $ mappingCustomerToModel value (Just orders) (Just prods)
---             Just value ->  return $ Just $ mappingCustomerToModel <$> value <*> (Just <$> getOrdersByCustomerId 1) <*> (Just <$> getEntityById custId)
+-- getModelCustomerById custId = getEntityById custId >>= \maybeCusts -> return (mappingCustomerToModel <$> maybeCusts <*> getOrdersByCustomerId custId <*> getProductsWithOrdersId custId)
 
 addModelCustomer :: CustomerModel -> IO Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust
@@ -42,3 +40,12 @@ removeModelCustomer = removeEid @Customer
 
 editModelCustomer :: CustomerModel -> IO ()
 editModelCustomer newCust = editEntity $ mappingModelToCustomer newCust
+
+searchProducts :: CustomerSearchModel -> IO [CustomerModel]
+searchProducts model =
+  map (\a -> mappingCustomerToModel a Nothing Nothing) <$> search filterFunc model
+  where
+    filterFunc :: CustomerSearchModel -> [Customer] -> [Customer]
+    filterFunc filters =
+      applyFilter customerName customerSearchModelName isInfixOf filters
+        . applyFilter customerAddress customerSearchModelAddress (==) filters

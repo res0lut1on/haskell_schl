@@ -6,8 +6,10 @@
 module Repositories.GRepository (EntityName (..), GenericRepository (..), ReadWriteDataEntity (..)) where
 
 import Data.RepEntity.BaseEntity (BaseEntity (..), EntityName (returnNameEntity))
+import Data.SearchModel
 import LibFold (addInTheEnd)
 import ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..))
+import Services.ApplyFilter (pagination)
 import Util.Utilities
 
 class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
@@ -22,12 +24,14 @@ class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
   addEntity :: a -> IO Int
   addEntity entity = (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a])
 
-  -- (getList :: IO [a]) >>= ((\newId -> (\_ -> return newId) (addNewEnt (entType entity) newId)) . getLastId)
   removeEid :: Int -> IO ()
   removeEid eid = (getList :: IO [a]) >>= (writeAllDataEntity . filter (\a -> entId a /= eid))
 
   editEntity :: a -> IO ()
   editEntity newEnt = (getList :: IO [a]) >>= ((writeAllDataEntity . addInTheEnd newEnt) . filter (\a -> entId a /= entId newEnt))
+
+  search :: (SearchModel b) => (b -> [a] -> [a]) -> b -> IO [a]
+  search filterModel searchModel = pagination (getPageNumber searchModel) (getPageSize searchModel) . filterModel searchModel <$> getList
 
 getLastId :: (BaseEntity a) => [a] -> Int
 getLastId xs = entId (last xs) + 1
