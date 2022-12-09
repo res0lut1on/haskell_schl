@@ -8,7 +8,7 @@ module Services.ShopServices (getModelShops, addModelShop, removeModelShop, edit
 import Data.Entities
 import Data.List
 import Data.Models (ShopModel)
-import Data.SearchModel (ShopSearchModel (shopSearchModelName, shopSearchModelPage))
+import Data.SearchModel (ShopSearchModel (ShopSearchModel, shopSearchModelAddress, shopSearchModelName, shopSearchModelPage))
 import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
 import Repositories.GenericRepository
 import Services.ApplyFilter
@@ -16,7 +16,7 @@ import Services.ApplyFilter
 getModelShops :: IO [ShopModel]
 getModelShops = map (`mappingShopToModel` Nothing) <$> getList
 
-getModelShopById :: Int -> IO (Maybe ShopModel)
+getModelShopById :: Int -> IO (Maybe ShopModel) -- про это я помню
 getModelShopById smId =
   getEntityById smId >>= \shop ->
     case shop of
@@ -24,11 +24,6 @@ getModelShopById smId =
       Just value ->
         getProductsByShop value >>= \prods ->
           return $ Just $ mappingShopToModel value (Just prods)
-
--- getModelShopById :: Int -> IO (Maybe ShopModel)
--- getModelShopById smId =
---   \maybeShop -> return $ maybeShop >>= \shp -> return $ mappingShopToModel shp <$> (Just  shp)
---   where shp = getEntityById smId >>=  \maybeShop -> maybeShop >>=  \shp -> getProductsByShop <$> shp
 
 addModelShop :: ShopModel -> IO Int
 addModelShop item = addEntity $ mappingModelToShop item
@@ -44,4 +39,6 @@ searchShops model =
   map (`mappingShopToModel` Nothing) <$> search filterFunc model
   where
     filterFunc :: ShopSearchModel -> [Shop] -> [Shop]
-    filterFunc = applyFilter shopName shopSearchModelName isInfixOf
+    filterFunc shopSearchModel =
+      applyFilter shopName shopSearchModelName isInfixOf shopSearchModel
+        . applyFilter shopAddress shopSearchModelAddress isInfixOf shopSearchModel

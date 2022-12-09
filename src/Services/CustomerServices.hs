@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer, searchProducts) where
+module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer, searchCustomers) where
 
 import Data.Entities (Customer (customerAddress, customerId, customerName))
 import Data.List
@@ -41,11 +41,11 @@ removeModelCustomer = removeEid @Customer
 editModelCustomer :: CustomerModel -> IO ()
 editModelCustomer newCust = editEntity $ mappingModelToCustomer newCust
 
-searchProducts :: CustomerSearchModel -> IO [CustomerModel]
-searchProducts model =
+searchCustomers :: CustomerSearchModel -> IO [CustomerModel]
+searchCustomers model =
   map (\a -> mappingCustomerToModel a Nothing Nothing) <$> search filterFunc model
   where
     filterFunc :: CustomerSearchModel -> [Customer] -> [Customer]
     filterFunc filters =
       applyFilter customerName customerSearchModelName isInfixOf filters
-        . applyFilter customerAddress customerSearchModelAddress (==) filters
+        . applyFilter customerAddress customerSearchModelAddress isInfixOf filters

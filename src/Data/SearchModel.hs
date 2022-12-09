@@ -28,6 +28,7 @@ data ProductSearchModel = ProductSearchModel
 
 data ShopSearchModel = ShopSearchModel
   { shopSearchModelName :: Maybe String,
+    shopSearchModelAddress :: Maybe String,
     shopSearchModelPage :: Int
   }
 

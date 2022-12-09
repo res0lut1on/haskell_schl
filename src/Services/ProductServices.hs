@@ -19,7 +19,7 @@ import Services.ApplyFilter
 getModelProducts :: IO [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) <$> getList
 
-getModelProductById :: Int -> IO (Maybe ProductModel)
+getModelProductById :: Int -> IO (Maybe ProductModel)  -- про это я помню
 getModelProductById prID =
   getEntityById prID >>= \prod ->
     case prod of
@@ -45,6 +45,3 @@ searchProducts model =
       applyFilter productName productSearchModelName isInfixOf filters
         . applyFilter productPrice productSearchModelPrice (==) filters
         . applyFilter productColor productSearchModelColor (==) filters
-
-
-

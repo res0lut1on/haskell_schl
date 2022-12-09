@@ -1,8 +1,8 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Services.ApplyFilter (applyFilter, pagination) where
 
-import Data.SearchModel
-
-applyFilter :: (SearchModel c) => (a -> b) -> (c -> Maybe b) -> (b -> b -> Bool) -> c -> [a] -> [a]
+applyFilter :: (a -> b) -> (c -> Maybe b) -> (b -> b -> Bool) -> c -> [a] -> [a]
 applyFilter valueSearchEntityField valueSearchModelField filt searchModel entityList =
   let maybeValueSearchModelField = valueSearchModelField searchModel
    in ff maybeValueSearchModelField
@@ -11,4 +11,4 @@ applyFilter valueSearchEntityField valueSearchModelField filt searchModel entity
     ff Nothing = entityList
 
 pagination :: Int -> Int -> [a] -> [a]
-pagination page sizePage = take sizePage . drop ((page - 1)* sizePage) 
+pagination page sizePage = take sizePage . drop ((page - 1) * sizePage)

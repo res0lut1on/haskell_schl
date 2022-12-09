@@ -3,11 +3,24 @@
 module Services.OrderServices (getOrders, getModelOrderById, addModelOrder, removeModelOrder, editModelOrder, searchOrders) where
 
 import Data.Entities
-import Data.List
+import Data.List (isInfixOf)
 import Data.Models (OrderModel)
-import Data.SearchModel (OrderSearchModel (OrderSearchModel, orderSearchModelNumber))
+import Data.SearchModel
+  ( OrderSearchModel (orderSearchModelNumber),
+  )
 import Mapping.Mapping (mappingModelToOrder, mappingOrderToModel)
-import Repositories.GenericRepository
+import Repositories.CustomerGR (getCustomerByOrderId)
+import Repositories.GRepository
+  ( GenericRepository
+      ( addEntity,
+        editEntity,
+        getEntityById,
+        getList,
+        removeEid,
+        search
+      ),
+  )
+import Repositories.ProductGR (getProductsByOrderId)
 import Services.ApplyFilter
 
 getOrders :: IO [OrderModel]
@@ -37,5 +50,4 @@ searchOrders model =
     return $ map (\a -> mappingOrderToModel a Nothing Nothing) srch
   where
     filterFunc :: OrderSearchModel -> [Order] -> [Order]
-    filterFunc filters =
-      applyFilter oNumber orderSearchModelNumber isInfixOf filters
+    filterFunc = applyFilter oNumber orderSearchModelNumber isInfixOf

@@ -4,12 +4,17 @@ module Spec
   )
 where
 
+import Data.CommonData (Color (White))
 import Data.Entities
 import Data.Models
+import Data.SearchModel
 import LibFold
 import Repositories.GenericRepository
 import Services.EntityServices
+import Services.ProductServices (searchProducts)
+import Services.ShopServices
 import Util.FileUtil
+import Data.SearchModel (ShopSearchModel(shopSearchModelAddress)) 
 
 busTest :: IO ()
 busTest = do
@@ -69,3 +74,11 @@ busTest = do
   print out
   initDataBase
   putStrLn ""
+  searchShops exampleShopSearchModel >>= print
+  putStrLn ""
+  searchProducts exampleProductSearchModel >>= print
+  print ""
+
+exampleShopSearchModel = ShopSearchModel {shopSearchModelName = Just "Green", shopSearchModelPage = 1, shopSearchModelAddress = Nothing}
+
+exampleProductSearchModel = ProductSearchModel Nothing Nothing (Just White) 1
