@@ -27,7 +27,7 @@ getModelCustomerById custId =
         getProductsWithOrdersId >>= \prods ->
           return $
             maybeCustomer >>= \customer ->
-              return $ mappingCustomerToModel customer (return orders) (return prods)
+              return $ mappingCustomerToModel customer (return orders) (return prods) -- <$>  --desugaring in book 
 
 -- getModelCustomerById :: Int -> IO (Maybe CustomerModel)
 -- getModelCustomerById custId = getEntityById custId >>= \maybeCusts -> return (mappingCustomerToModel <$> maybeCusts <*> getOrdersByCustomerId custId <*> getProductsWithOrdersId custId)

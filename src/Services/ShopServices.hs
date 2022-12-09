@@ -7,23 +7,26 @@ module Services.ShopServices (getModelShops, addModelShop, removeModelShop, edit
 
 import Data.Entities
 import Data.List
+import Data.Maybe
 import Data.Models (ShopModel)
 import Data.SearchModel (ShopSearchModel (ShopSearchModel, shopSearchModelAddress, shopSearchModelName, shopSearchModelPage))
 import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
 import Repositories.GenericRepository
 import Services.ApplyFilter
+import Util.Utilities (unwrap)
 
 getModelShops :: IO [ShopModel]
 getModelShops = map (`mappingShopToModel` Nothing) <$> getList
 
-getModelShopById :: Int -> IO (Maybe ShopModel) -- про это я помню
+getModelShopById :: Int -> IO (Maybe ShopModel)
 getModelShopById smId =
-  getEntityById smId >>= \shop ->
-    case shop of
-      Nothing -> return Nothing
-      Just value ->
-        getProductsByShop value >>= \prods ->
-          return $ Just $ mappingShopToModel value (Just prods)
+  unwrap $
+    getEntityById smId >>= \maybeShop ->
+      return $
+        maybeShop >>= \shp ->
+          return $
+            getProductsByShop shp >>= \prods ->
+              return $ Just $ mappingShopToModel shp (Just prods)
 
 addModelShop :: ShopModel -> IO Int
 addModelShop item = addEntity $ mappingModelToShop item

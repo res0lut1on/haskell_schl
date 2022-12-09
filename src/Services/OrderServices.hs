@@ -38,7 +38,7 @@ getModelOrderById orderID =
 addModelOrder :: OrderModel -> IO Int
 addModelOrder item = addEntity $ mappingModelToOrder item
 
-removeModelOrder :: Int -> IO ()
+removeModelOrder :: Int -> IO () -- type applicative generic @a
 removeModelOrder = removeEid @Order
 
 editModelOrder :: OrderModel -> IO ()

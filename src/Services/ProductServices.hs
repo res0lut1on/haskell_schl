@@ -15,17 +15,22 @@ import Mapping.Mapping
   )
 import Repositories.GenericRepository
 import Services.ApplyFilter
+import Util.Utilities (unwrap)
 
 getModelProducts :: IO [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) <$> getList
 
-getModelProductById :: Int -> IO (Maybe ProductModel)  -- про это я помню
+getModelProductById :: Int -> IO (Maybe ProductModel)
 getModelProductById prID =
-  getEntityById prID >>= \prod ->
-    case prod of
-      Nothing -> return Nothing
-      Just value ->
-        getEntityById (productShopId value) >>= \shp -> return $ Just $ mappingProductToModel value shp
+  unwrap $
+    getEntityById
+      prID
+      >>= \maybeProd ->
+        return $
+          maybeProd >>= \prod ->
+            return $
+              getEntityById (productShopId prod)
+                >>= \shp -> return $ Just $ mappingProductToModel prod shp
 
 addModelProduct :: ProductModel -> IO Int
 addModelProduct item = addEntity $ mappingModelToProduct item
