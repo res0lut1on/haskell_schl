@@ -12,7 +12,7 @@ module Repositories.GenericRepository
 where
 
 import Repositories.CustomerGR (getCustomerByOrder, getCustomerByOrderId)
-import Repositories.GRepository
+import Repositories.GRepository (GenericRepository (..))
 import Repositories.OrderGR (getOrderByCustomerId, getOrdersByCustomerId)
 import Repositories.ProductGR (getProductsByOrder, getProductsByOrderId, getProductsByShop, getProductsWithOrdersId)
 import Repositories.ProductOrderGR ()

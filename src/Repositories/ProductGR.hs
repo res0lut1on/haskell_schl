@@ -4,8 +4,15 @@
 module Repositories.ProductGR (getProductsByShop, getProductsByOrder, getProductsWithOrdersId, getProductsByOrderId) where
 
 import Data.Entities
+  ( Order (orderId),
+    Product,
+    ProductOrder (opId, poId),
+    Shop (Shop),
+    productId,
+    productShopId,
+  )
 import ReadWrite.ReadWriteProduct ()
-import Repositories.GRepository
+import Repositories.GRepository (GenericRepository (getList))
 import Repositories.OrderGR ()
 import Repositories.ProductOrderGR ()
 

@@ -2,9 +2,9 @@
 
 module ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..)) where
 
+import Data.MappingTxt
 import Data.RepEntity.BaseEntity (BaseEntity (..))
 import Lib
-import Mapping.MappingTxt
 import Util.FileUtil
 
 class (BaseEntity a, MappEntity a) => ReadWriteDataEntity a where

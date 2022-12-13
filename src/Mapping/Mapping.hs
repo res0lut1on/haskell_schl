@@ -48,7 +48,6 @@ mappingModelToProduct modelProduct =
   let shId = shopModelId <$> productModelShop modelProduct
    in Product (productModelId modelProduct) (fromMaybe (-1) shId) (productModelName modelProduct) (productModelPrice modelProduct) (productModelColor modelProduct)
 
-
 mappingShopToModel :: Shop -> Maybe [Product] -> ShopModel
 mappingShopToModel shop prod =
   let productModel = case prod of
@@ -60,6 +59,14 @@ mappingShopToModel shop prod =
           shopModelAddress = shopAddress shop,
           shopModelProducts = productModel
         }
+
+mappingModelToShop :: ShopModel -> Shop
+mappingModelToShop modelShop =
+  Shop
+    { shopId = shopModelId modelShop,
+      shopName = shopModelName modelShop,
+      shopAddress = shopModelAddress modelShop
+    }
 
 mappingCustomerToModel :: Customer -> Maybe [Order] -> Maybe [(Int, [Product])] -> CustomerModel
 mappingCustomerToModel cust ord prodDict =
@@ -91,15 +98,6 @@ mappingOrderToModel ord prod cust =
           orderModelCustomer = customerModel,
           orderProducts = productModel
         }
-
-
-mappingModelToShop :: ShopModel -> Shop
-mappingModelToShop modelShop =
-  Shop
-    { shopId = shopModelId modelShop,
-      shopName = shopModelName modelShop,
-      shopAddress = shopModelAddress modelShop
-    }
 
 mappingModelToCustomer :: CustomerModel -> Customer
 mappingModelToCustomer modelCustomer =
