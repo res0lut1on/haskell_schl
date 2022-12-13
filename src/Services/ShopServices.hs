@@ -3,17 +3,20 @@
 
 {-# HLINT ignore "Use lambda-case" #-}
 
-module Services.ShopServices (getModelShops, addModelShop, removeModelShop, editModelShop, searchShops, getModelShopById) where
+module Services.ShopServices (getModelShops, addModelShop, removeModelShop, editModelShop, getModelShopById, getShop) where
 
-import Data.Entities
-import Data.List
-import Data.Maybe
-import Data.Models (ShopModel)
-import Data.SearchModel (ShopSearchModel (ShopSearchModel, shopSearchModelAddress, shopSearchModelName, shopSearchModelPage))
+import Data.Entities (Product (..), Shop (..))
+import Data.Models (ShopModel (ShopModel))
 import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
 import Repositories.GenericRepository
-import Services.ApplyFilter
+import qualified Services.GService as S
 import Util.Utilities (unwrap)
+
+getShop :: Int -> IO (Maybe ShopModel)
+getShop = S.get getProducts
+  where
+    getProducts :: Shop -> IO (Maybe [Product])
+    getProducts shp = Just <$> getProductsByShop shp
 
 getModelShops :: IO [ShopModel]
 getModelShops = map (`mappingShopToModel` Nothing) <$> getList
@@ -31,17 +34,8 @@ getModelShopById smId =
 addModelShop :: ShopModel -> IO Int
 addModelShop item = addEntity $ mappingModelToShop item
 
-removeModelShop :: Int -> IO ()
-removeModelShop = removeEid @Shop
+removeModelShop :: (GenericRepository a) => Int -> IO (Maybe a)
+removeModelShop = removeEid
 
 editModelShop :: ShopModel -> IO ()
 editModelShop item = editEntity $ mappingModelToShop item
-
-searchShops :: ShopSearchModel -> IO [ShopModel]
-searchShops model =
-  map (`mappingShopToModel` Nothing) <$> search filterFunc model
-  where
-    filterFunc :: ShopSearchModel -> [Shop] -> [Shop]
-    filterFunc shopSearchModel =
-      applyFilter shopName shopSearchModelName isInfixOf shopSearchModel
-        . applyFilter shopAddress shopSearchModelAddress isInfixOf shopSearchModel

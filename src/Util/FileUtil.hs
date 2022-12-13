@@ -24,11 +24,11 @@ import Data.Context
     сustomers,
   )
 import Data.Entities
+import Data.MappingTxt
 import Data.RepEntity.BaseEntity
 import GHC.IO.Handle
 import Lib (split)
 import LibFold (toLowerCase)
-import Mapping.MappingTxt
 import System.IO
 
 ----------------------------------------------------------------------------------------------------------------------

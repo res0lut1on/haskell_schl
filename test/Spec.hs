@@ -5,16 +5,13 @@ module Spec
 where
 
 import Data.CommonData (Color (White))
-import Data.Entities
 import Data.Models
 import Data.SearchModel
 import LibFold
-import Repositories.GenericRepository
 import Services.EntityServices
-import Services.ProductServices (searchProducts)
-import Services.ShopServices
+import Services.SearchService ()
 import Util.FileUtil
-import Data.SearchModel (ShopSearchModel(shopSearchModelAddress)) 
+import Services.ProductServices (getProduct)
 
 busTest :: IO ()
 busTest = do
@@ -60,9 +57,6 @@ busTest = do
   out <- getModelOrderById 3
   print (out)
   putStrLn ""
-  putStrLn "Delete Customer, id = 2"
-  removeModelCustomer 2
-  out <- getModelCustomers
   print out
   putStrLn ""
   putStrLn "Add Customer"
@@ -74,11 +68,7 @@ busTest = do
   print out
   initDataBase
   putStrLn ""
-  searchShops exampleShopSearchModel >>= print
-  putStrLn ""
-  searchProducts exampleProductSearchModel >>= print
-  print ""
-
+  getProduct >>= print
 exampleShopSearchModel = ShopSearchModel {shopSearchModelName = Just "Green", shopSearchModelPage = 1, shopSearchModelAddress = Nothing}
 
 exampleProductSearchModel = ProductSearchModel Nothing Nothing (Just White) 1
