@@ -43,6 +43,12 @@ mappingProductToModel prod sh =
         Nothing -> Nothing
    in ProductModel (productId prod) shopModel (productName prod) (productPrice prod) (productColor prod)
 
+mappingModelToProduct :: ProductModel -> Product
+mappingModelToProduct modelProduct =
+  let shId = shopModelId <$> productModelShop modelProduct
+   in Product (productModelId modelProduct) (fromMaybe (-1) shId) (productModelName modelProduct) (productModelPrice modelProduct) (productModelColor modelProduct)
+
+
 mappingShopToModel :: Shop -> Maybe [Product] -> ShopModel
 mappingShopToModel shop prod =
   let productModel = case prod of
@@ -86,10 +92,6 @@ mappingOrderToModel ord prod cust =
           orderProducts = productModel
         }
 
-mappingModelToProduct :: ProductModel -> Product
-mappingModelToProduct modelProduct =
-  let shId = shopModelId <$> productModelShop modelProduct
-   in Product (productModelId modelProduct) (fromMaybe (-1) shId) (productModelName modelProduct) (productModelPrice modelProduct) (productModelColor modelProduct)
 
 mappingModelToShop :: ShopModel -> Shop
 mappingModelToShop modelShop =

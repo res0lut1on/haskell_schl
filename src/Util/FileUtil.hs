@@ -17,14 +17,19 @@ where
 
 import Control.Monad
 import Data.Context
-    ( сustomers, shops, products, orders, productOrder )
+  ( orders,
+    productOrder,
+    products,
+    shops,
+    сustomers,
+  )
 import Data.Entities
 import Data.RepEntity.BaseEntity
 import GHC.IO.Handle
 import Lib (split)
+import LibFold (toLowerCase)
 import Mapping.MappingTxt
 import System.IO
-import LibFold (toLowerCase)
 
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -109,29 +114,22 @@ mappProdFromTxt line =
 
 writeEntWhile :: (BaseEntity a, MappEntity a) => [a] -> IO ()
 writeEntWhile ents =
-  do
-    outh <- openFile (getRelativePathToHere ++ "/" ++ toLowerCase (entName (head ents)) ++ ".txt") WriteMode
+  openFile (getRelativePathToHere ++ "/" ++ toLowerCase (entName (head ents)) ++ ".txt") WriteMode >>= \outh ->
     forM_
       ents
-      ( \a ->
-          do
-            entloop a outh
-      )
-    hClose outh
+      (`entloop` outh)
+      >> hClose outh
   where
     entloop es outh =
-      do
-        hPutStrLn outh (mappEntityTo es)
-        return ()
+      hPutStrLn outh (mappEntityTo es)
 
 readEntityData :: String -> IO EntityContent
 readEntityData eName =
-  do
-    inh <- openFile (getRelativePathToHere ++ "/" ++ toLowerCase eName ++ ".txt") ReadMode
-    contents <- hGetContents inh
-    putStrLn contents
-    hClose inh
-    return contents
+  openFile (getRelativePathToHere ++ "/" ++ toLowerCase eName ++ ".txt") ReadMode >>= \inh ->
+    hGetContents inh >>= \contents ->
+      putStrLn contents
+        >> hClose inh
+        >> return contents
 
 instance MappEntity Customer where
   mappEntityTo :: Customer -> String
@@ -172,9 +170,9 @@ addEnt ent = appendFile (getRelativePathToHere ++ "/" ++ entName ent ++ ".txt") 
 
 initDataBase :: IO ()
 initDataBase =
-  do
-    writeEntWhile сustomers
-    writeEntWhile products
-    writeEntWhile shops
-    writeEntWhile orders
-    writeEntWhile productOrder
+  writeEntWhile сustomers
+    >> writeEntWhile products
+    >> writeEntWhile products
+    >> writeEntWhile shops
+    >> writeEntWhile orders
+    >> writeEntWhile productOrder

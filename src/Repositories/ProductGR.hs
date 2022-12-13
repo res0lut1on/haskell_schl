@@ -1,13 +1,13 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Repositories.ProductGR (getProductsByShop, getProductsByOrder, getProductsWithOrdersId, getProductsByOrderId) where
 
 import Data.Entities
-import Repositories.GRepository
 import ReadWrite.ReadWriteProduct ()
+import Repositories.GRepository
+import Repositories.OrderGR ()
 import Repositories.ProductOrderGR ()
-import Repositories.OrderGR()
 
 instance GenericRepository Product
 
@@ -19,11 +19,10 @@ getProductsByOrder ord = getProductsByOrderId $ orderId ord
 
 getProductsByOrderId :: Int -> IO [Product]
 getProductsByOrderId sId =
-  do
-    out <- getList @ProductOrder
-    allProduct <- getList @Product 
-    let ordWithProdId = filter (\a -> opId a == sId) out
-    return $ getProductsByOrderId' ordWithProdId allProduct
+  getList @ProductOrder >>= \out ->
+    getList @Product >>= \allProduct ->
+      return $
+        getProductsByOrderId' (filter (\a -> opId a == sId) out) allProduct
   where
     getProductsByOrderId' :: [ProductOrder] -> [Product] -> [Product]
     getProductsByOrderId' (x : xs) allProduct = head (filter (\a -> productId a == poId x) allProduct) : getProductsByOrderId' xs allProduct
@@ -31,12 +30,10 @@ getProductsByOrderId sId =
 
 getProductsWithOrdersId :: IO [(Int, [Product])]
 getProductsWithOrdersId =
-  do
-    out <- getList @Order 
+  getList @Order >>= \out ->
     mapM
       ( \x ->
-          do
-            out <- getProductsByOrderId (orderId x)
+          getProductsByOrderId (orderId x) >>= \out ->
             return (orderId x, out)
       )
       out
