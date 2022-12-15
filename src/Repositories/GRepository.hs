@@ -11,6 +11,8 @@ import LibFold (addInTheEnd)
 import ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..))
 import Services.ApplyFilter (pagination)
 import Util.Utilities
+import Startup (App)
+import Control.Monad.Writer (MonadWriter(tell))
 
 class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
   getList :: IO [a]
@@ -19,7 +21,7 @@ class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
      in readAllDataEntity name
 
   getEntityById :: Int -> IO (Maybe a)
-  getEntityById eid = maybeHead . filter (\e -> entId e == eid) <$> getList
+  getEntityById eid =  maybeHead . filter (\e -> entId e == eid) <$> getList
 
   addEntity :: a -> IO Int
   addEntity entity = (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a])

@@ -23,6 +23,14 @@ getProduct = S.get getShop
     getShop :: Product -> IO (Maybe Shop)
     getShop = R.getEntityById . productShopId
 
+
+
+
+
+
+
+
+
 getModelProducts :: IO [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) <$> getList
 
