@@ -5,40 +5,63 @@
 
 module Repositories.GRepository (EntityName (..), GenericRepository (..), ReadWriteDataEntity (..)) where
 
+import Control.Monad.State
+import Control.Monad.Writer (MonadWriter (tell))
 import Data.RepEntity.BaseEntity (BaseEntity (..), EntityName (returnNameEntity))
 import Data.SearchModel
 import LibFold (addInTheEnd)
 import ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..))
 import Services.ApplyFilter (pagination)
+import Startup (App, AppCache, AppConfig (pageSize))
+import Util.CacheStyle
 import Util.Utilities
-import Startup (App)
-import Control.Monad.Writer (MonadWriter(tell))
+import Control.Monad.Reader (MonadReader(ask))
 
 class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
-  getList :: IO [a]
-  getList =
-    let name = returnNameEntity (entityName :: EntityName a)
-     in readAllDataEntity name
+  getList :: App [a]
+  getList = return []
 
-  getEntityById :: Int -> IO (Maybe a)
-  getEntityById eid =  maybeHead . filter (\e -> entId e == eid) <$> getList
+  -- getList =
+  --   tell ["Method getList begin"]
+  --     >> get
+  --     >>= \cache ->
+  --       let cacheData = getCache cache :: [a]
+  --        in getDataFromCache (not (null cacheData)) cache cacheData >>= \result ->
+  --             tell ["Method getList end"]
+  --               >> return result
+  --   where
+  --     getDataFromCache :: Bool -> AppCache -> [a] -> App [a]
+  --     getDataFromCache True _ cache = return cache
+  --     getDataFromCache False appCache _ = (readAllDataEntity (returnNameEntity (entityName :: EntityName a))) >>= \newCache -> put (setCache appCache newCache) >> retrun newCache
 
-  addEntity :: a -> IO Int
-  addEntity entity = (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a])
+  --   name = returnNameEntity (entityName :: EntityName a)
+  --  in readAllDataEntity name
 
-  removeEid :: Int -> IO (Maybe a)
+  getEntityById :: Int -> App (Maybe a)
+  getEntityById eid =
+    tell ["Get begin"] >> maybeHead . filter (\e -> entId e == eid) <$> getList >>= \res ->
+      tell ["Get end"] >> return res
+
+  addEntity :: a -> App Int
+  addEntity entity =
+    tell ["AddEntity begin"] >> (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a]) >>= \res ->
+      tell ["AddEntity end"] >> clearCache @a >> return res
+
+  removeEid :: Int -> App (Maybe a)
   removeEid eid =
     let listEnt = (getList :: IO [a])
         ent = filter (\a -> entId a == eid) <$> listEnt
-     in (writeAllDataEntity . filter (\a -> entId a /= eid) <$> listEnt) >> maybeHead <$> ent
+     in tell ["removeEid begin"] >> (writeAllDataEntity . filter (\a -> entId a /= eid) <$> listEnt) >> maybeHead <$> ent >>= \res -> isValid res >>= clearCache @a >> tell["removeEid end"] >> return res
 
-  -- (getList :: IO [a]) >>= (writeAllDataEntity . filter (\a -> entId a /= eid))
+  -- -- (getList :: IO [a]) >>= (writeAllDataEntity . filter (\a -> entId a /= eid))
 
-  editEntity :: a -> IO ()
-  editEntity newEnt = (getList :: IO [a]) >>= ((writeAllDataEntity . addInTheEnd newEnt) . filter (\a -> entId a /= entId newEnt))
+  -- editEntity :: a -> App ()
+  -- editEntity newEnt = tell ["editEntity begin"] >> (getList :: IO [a]) >>= ((writeAllDataEntity . addInTheEnd newEnt) . filter (\a -> entId a /= entId newEnt)) >>= \res -> 
+  --   clearCache @a >> tell["editEntity end"] >> return res
 
-  search :: (SearchModel b) => (b -> [a] -> [a]) -> b -> IO [a]
-  search filterModel searchModel = pagination (getPageNumber searchModel) (getPageSize searchModel) . filterModel searchModel <$> getList
+  search :: (SearchModel b) => (b -> [a] -> [a]) -> b -> App [a]
+  search filterModel searchModel = tell["search begin"] >> ask >>= \config ->  getList >>= (\res ->
+    tell ["search end"] >> return res) . pagination (getPageNumber searchModel) (pageSize config) . filterModel searchModel
 
 getLastId :: (BaseEntity a) => [a] -> Int
 getLastId xs = entId (last xs) + 1
