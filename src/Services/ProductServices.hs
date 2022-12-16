@@ -2,7 +2,7 @@
 
 {-# HLINT ignore "Use lambda-case" #-}
 
-module Services.ProductServices (getModelProducts, getModelProductById, addModelProduct, removeModelProduct, editModelProduct, getProduct) where
+module Services.ProductServices (getModelProducts, getModelProductById, addModelProduct, removeModelProduct, editModelProduct) where
 
 import Data.Entities (Product (Product), Shop (Shop), productShopId)
 import Data.Models (ProductModel, ShopModel (ShopModel))
