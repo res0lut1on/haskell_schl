@@ -10,7 +10,6 @@ module Services.EntityServices
     removeModelProduct,
     editModelProduct,
     getOrders,
-    getModelOrderById,
     addModelOrder,
     removeModelOrder,
     editModelOrder,
@@ -23,6 +22,6 @@ module Services.EntityServices
 where
 
 import Services.CustomerServices (addModelCustomer, editModelCustomer, getModelCustomerById, getModelCustomers, removeModelCustomer)
-import Services.OrderServices (addModelOrder, editModelOrder, getModelOrderById, getOrders, removeModelOrder)
+import Services.OrderServices (addModelOrder, editModelOrder, getOrders, removeModelOrder)
 import Services.ProductServices (addModelProduct, editModelProduct, getModelProductById, getModelProducts, removeModelProduct)
 import Services.ShopServices (addModelShop, editModelShop, getModelShopById, getModelShops, removeModelShop)
