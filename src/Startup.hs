@@ -42,7 +42,8 @@ data AppConfig = AppConfig
   }
 
 data TypeException = TypeException
-  { text :: String
+  { eId :: Int,
+    text :: String
   }
   deriving (Show)
 

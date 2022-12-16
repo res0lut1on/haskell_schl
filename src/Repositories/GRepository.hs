@@ -25,10 +25,10 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
       >> get
       >>= \cache ->
         let cacheData = getCache cache :: [a]
-         in tell ["Method getList entity = " ++ show (returnNameEntity (entityName :: EntityName a))]
+         in tell ["Method getList entity = " ++ getNameEnt @a]
               >> ( if null cacheData
                      then
-                       readAllDataEntity (returnNameEntity (entityName :: EntityName a))
+                       readAllDataEntity (getNameEnt @a)
                          >>= \newCache ->
                            put (setCache cache newCache)
                              >> tell ["Method getList end"]
@@ -42,9 +42,9 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
   getEntityById eid =
     let appArrEnt = filter (\e -> entId e == eid) <$> getList :: App [a]
      in tell ["Get begin"]
-          >> tell ["Get with entity = " ++ returnNameEntity (entityName :: EntityName a)]
+          >> tell ["Get with entity = " ++ getNameEnt @a]
           >> appArrEnt
-          >>= ( isValidArr ("Cant get " ++ returnNameEntity (entityName :: EntityName a) ++ "with id = " ++ show eid)
+          >>= ( isValidArr "getEntityById" eid
                   >=> (\res -> tell ["GetEntityById with id = " ++ show eid] >> tell ["Get end"] >> return res)
               )
 
@@ -53,7 +53,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
     let newId = getLastId <$> (getList :: App [a])
      in tell ["AddEntity begin"] >> newId >>= \res ->
           addNewEnt (entType entity) res
-            >> tell ["AddEntity with entity = " ++ returnNameEntity (entityName :: EntityName a)]
+            >> tell ["AddEntity with entity = " ++ getNameEnt @a]
             >> tell ["AddEntity entity with id = " ++ show (entId entity)]
             >> clearCache @a
             >> tell ["AddEntity end"]
@@ -65,12 +65,12 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
         appArrEnt = filter (\a -> entId a == eid) <$> listEnt
      in tell ["removeEid begin"]
           >> appArrEnt
-          >>= ( isValidArr ("Cant remove " ++ returnNameEntity (entityName :: EntityName a) ++ "with id = " ++ show eid)
+          >>= ( isValidArr "Edit" eid
                   >=> ( \res ->
                           ( writeAllDataEntity . filter (\a -> entId a /= eid)
                               <$> listEnt
                           )
-                            >> tell ["removeEid with entity = " ++ show (returnNameEntity (entityName :: EntityName a))]
+                            >> tell ["removeEid with entity = " ++ getNameEnt @a]
                             >> tell ["removeEid remove ent with id = " ++ show eid]
                             >> clearCache @a
                             >> tell ["removeEid end"]
@@ -82,8 +82,8 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
   editEntity newEnt =
     let appArrEnt = filter (\a -> entId a == entId newEnt) <$> (getList :: App [a])
      in tell ["editEntity begin"] >> appArrEnt >>= \arrEnt ->
-          isValidArr ("Cant edit " ++ returnNameEntity (entityName :: EntityName a) ++ "with id = " ++ show (entId newEnt)) arrEnt
-            >> tell ["editEntity with entity = " ++ show (returnNameEntity (entityName :: EntityName a))]
+          isValidArr "Edit" (entId newEnt) arrEnt
+            >> tell ["editEntity with entity = " ++ getNameEnt @a]
             >> writeAllDataEntity (addInTheEnd newEnt arrEnt)
             >> tell ["editEntity edit complete with entity " ++ show (entId newEnt)]
             >> clearCache @a
@@ -101,3 +101,6 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
 
 getLastId :: (BaseEntity a) => [a] -> Int
 getLastId xs = entId (last xs) + 1
+
+getNameEnt :: forall a. (BaseEntity a) => String
+getNameEnt = returnNameEntity (entityName :: EntityName a)

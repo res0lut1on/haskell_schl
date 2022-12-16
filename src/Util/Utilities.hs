@@ -6,7 +6,6 @@ module Util.Utilities
   ( maybeHead,
     unwrap,
     isValidArr,
-    isValid,
     toMaybeM,
   )
 where
@@ -27,15 +26,6 @@ unwrap mio = mio >>= fromMaybe (return Nothing)
 toMaybeM :: (Monad m) => m a -> m (Maybe a)
 toMaybeM value = value >>= \val -> return $ Just val
 
-isValidArr :: String -> [a] -> App a
-isValidArr mess [] = throwError $ TypeException mess
-isValidArr _ (x : _) = return x
-
-isValid :: String -> Maybe a -> App a
-isValid mess Nothing = throwError $ TypeException mess
-isValid _ (Just a) = return a
-
---------------------------------------------------------------------  Почему это не работает?
--- isValidArr :: (BaseEntity a) => String -> Int -> [a] -> App a
--- isValidArr mess eId [] = throwError $ TypeException eId (returnNameEntity (entityName :: EntityName a))
--- isValidArr _ _ (x : _) = return x
+isValidArr :: forall a. (BaseEntity a) => String -> Int -> [a] -> App a
+isValidArr methodType eId [] = throwError $ TypeException eId ("Error with Type Method [" ++ methodType ++ "] with Entity = " ++ returnNameEntity (entityName :: EntityName a))
+isValidArr _ _ (x : _) = return x
