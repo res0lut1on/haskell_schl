@@ -41,7 +41,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a) => GenericRepository a
      in tell ["Get begin"]
           >> appArrEnt
           >>= ( isValidArr
-                  >=> (\res -> tell ["Get end"] >> return res)
+                  >=> (\res -> tell ["GetEntityById with id = " ++ show eid] >> tell ["Get end"] >> return res)
               )
 
   addEntity :: a -> App Int
@@ -49,7 +49,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a) => GenericRepository a
     let newId = getLastId <$> (getList :: App [a])
      in tell ["AddEntity begin"] >> newId >>= \res ->
           addNewEnt (entType entity) res
-            >> tell ["AddEntity add"]
+            >> tell ["AddEntity entity with id = " ++ show (entId entity)]
             >> clearCache @a
             >> tell ["AddEntity end"]
             >> newId
