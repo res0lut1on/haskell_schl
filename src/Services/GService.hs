@@ -14,27 +14,28 @@ import Repositories.ProductGR ()
 import Repositories.ShopGR ()
 import Services.SearchService (SearchService (..))
 import Util.Utilities (unwrap)
+import Startup
 
 class (GenericRepository a) => GenericService a where
-  getList :: (GenericMapping a b) => IO [b]
-  getList = toList <$> (R.getList :: IO [a])
+  getList :: (GenericMapping a b) => App [b]
+  getList = toList <$> (R.getList :: App [a])
 
-  get :: (MappingParam a b c) => (a -> IO c) -> Int -> IO (Maybe b)
-  get getParams sid = unwrap $ (R.getEntityById sid :: IO (Maybe a)) >>= \maybeEnt -> return $ maybeEnt >>= \ent -> return $ Just . toModelParam ent <$> getParams ent
+  get :: (MappingParam a b c) => (a -> App c) -> Int -> App (Maybe b)
+  get getParams sid = unwrap $ (R.getEntityById sid :: App (Maybe a)) >>= \maybeEnt -> return $ maybeEnt >>= \ent -> return $ Just . toModelParam ent <$> getParams ent
 
-  addModel :: (GenericMapping b a) => b -> IO Int
+  addModel :: (GenericMapping b a) => b -> App Int
   addModel tmodel = R.addEntity (toModel tmodel :: a)
 
-  editModel :: (GenericMapping b a) => b -> IO ()
+  editModel :: (GenericMapping b a) => b -> App ()
   editModel tmodel = R.editEntity (toModel tmodel :: a)
 
-  delete :: (GenericMapping a b) => Int -> IO (Maybe b)
+  delete :: (GenericMapping a b) => Int -> App (Maybe b)
   delete sid =
-    (removeEid sid :: IO (Maybe a)) >>= \maybeEnt ->
+    (removeEid sid :: App (Maybe a)) >>= \maybeEnt ->
       return (maybeEnt >>= \val -> return (toModel val))
 
-  search :: (GenericMapping a b, SearchService c a) => c -> IO [b]
-  search model = toList <$> (R.search searchModel model :: IO [a])
+  search :: (GenericMapping a b, SearchService c a) => c -> App [b]
+  search model = toList <$> (R.search searchModel model :: App [a])
 
 instance GenericService Product
 
