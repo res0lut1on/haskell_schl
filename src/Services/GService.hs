@@ -13,15 +13,14 @@ import Repositories.OrderGR ()
 import Repositories.ProductGR ()
 import Repositories.ShopGR ()
 import Services.SearchService (SearchService (..))
-import Util.Utilities (unwrap)
 import Startup
 
 class (GenericRepository a) => GenericService a where
   getList :: (GenericMapping a b) => App [b]
   getList = toList <$> (R.getList :: App [a])
 
-  get :: (MappingParam a b c) => (a -> App c) -> Int -> App (Maybe b)
-  get getParams sid = unwrap $ (R.getEntityById sid :: App (Maybe a)) >>= \maybeEnt -> return $ maybeEnt >>= \ent -> return $ Just . toModelParam ent <$> getParams ent
+  get :: (MappingParam a b c) => (a -> App c) -> Int -> App b
+  get getParams sid = (R.getEntityById sid :: App a) >>= \ent -> toModelParam ent <$> getParams ent
 
   addModel :: (GenericMapping b a) => b -> App Int
   addModel tmodel = R.addEntity (toModel tmodel :: a)
@@ -29,10 +28,10 @@ class (GenericRepository a) => GenericService a where
   editModel :: (GenericMapping b a) => b -> App ()
   editModel tmodel = R.editEntity (toModel tmodel :: a)
 
-  delete :: (GenericMapping a b) => Int -> App (Maybe b)
+  delete :: (GenericMapping a b) => Int -> App b
   delete sid =
-    (removeEid sid :: App (Maybe a)) >>= \maybeEnt ->
-      return (maybeEnt >>= \val -> return (toModel val))
+    (removeEid sid :: App a) >>= \ent ->
+      return $ toModel ent
 
   search :: (GenericMapping a b, SearchService c a) => c -> App [b]
   search model = toList <$> (R.search searchModel model :: App [a])

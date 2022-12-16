@@ -10,32 +10,29 @@ import Data.Models (ShopModel (ShopModel))
 import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
 import Repositories.GenericRepository
 import qualified Services.GService as S
+import Startup
 import Util.Utilities (unwrap)
 
-getShop :: Int -> IO (Maybe ShopModel)
-getShop = S.get getProducts
-  where
-    getProducts :: Shop -> IO (Maybe [Product])
-    getProducts shp = Just <$> getProductsByShop shp
+-- getShop :: Int -> App (Maybe ShopModel)
+-- getShop = S.get getProducts
+--   where
+--     getProducts :: Shop -> App [Product]
+--     getProducts shp = getProductsByShop shp
 
-getModelShops :: IO [ShopModel]
+getModelShops :: App [ShopModel]
 getModelShops = map (`mappingShopToModel` Nothing) <$> getList
 
-getModelShopById :: Int -> IO (Maybe ShopModel)
+getModelShopById :: Int -> App ShopModel
 getModelShopById smId =
-  unwrap $
-    getEntityById smId >>= \maybeShop ->
-      return $
-        maybeShop >>= \shp ->
-          return $
-            getProductsByShop shp >>= \prods ->
-              return $ Just $ mappingShopToModel shp (Just prods)
+  getEntityById smId >>= \shp ->
+    getProductsByShop shp >>= \prods ->
+      return $ mappingShopToModel shp (Just prods)
 
-addModelShop :: ShopModel -> IO Int
+addModelShop :: ShopModel -> App Int
 addModelShop item = addEntity $ mappingModelToShop item
 
-removeModelShop :: (GenericRepository a) => Int -> IO (Maybe a)
+removeModelShop :: (GenericRepository a) => Int -> App a
 removeModelShop = removeEid
 
-editModelShop :: ShopModel -> IO ()
+editModelShop :: ShopModel -> App ()
 editModelShop item = editEntity $ mappingModelToShop item

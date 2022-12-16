@@ -24,8 +24,10 @@ instance GenericRepository Product
 getProductsByShop :: Shop -> App [Product]
 getProductsByShop (Shop sId _ _) = tell ["getProductsByShop begin"] >> filter (\x -> productShopId x == sId) <$> getList >>= \res -> tell ["getProductsByShop end"] >> return res
 
--- getProductsByOrder :: Order -> App [Product]
--- getProductsByOrder ord = tell ["getProductsByOrder start"] >> getProductsByOrderId $ orderId ord >>= \res -> tell ["getProductsByOrder end"] 
+getProductsByOrder :: Order -> App [Product]
+getProductsByOrder ord = 
+  let prd = getProductsByOrderId $ orderId ord
+  in tell ["getProductsByOrder start"] >> prd >>= \res -> tell ["getProductsByOrder end"] 
 
 getProductsByOrderId :: Int -> App [Product]
 getProductsByOrderId sId =

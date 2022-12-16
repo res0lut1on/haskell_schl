@@ -43,3 +43,10 @@ instance CacheStyle Shop where
 
   setCache :: AppCache -> [Shop] -> AppCache
   setCache appstate xs = appstate {shopCache = xs}
+
+instance CacheStyle ProductOrder where
+  getCache :: AppCache -> [ProductOrder]
+  getCache = productOrderCache
+
+  setCache :: AppCache -> [ProductOrder] -> AppCache
+  setCache appstate xs = appstate {productOrderCache = xs}

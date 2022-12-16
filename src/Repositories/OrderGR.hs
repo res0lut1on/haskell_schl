@@ -2,17 +2,26 @@
 
 module Repositories.OrderGR (getOrderByCustomerId, getOrdersByCustomerId) where
 
+import Control.Monad
+import Control.Monad.Writer (MonadWriter (tell))
 import Data.Entities
-import Repositories.GRepository
 import ReadWrite.ReadWriteOrder ()
-import Util.Utilities
+import Repositories.GRepository
 import Startup
-import Control.Monad.Writer (MonadWriter(tell))
+import Util.Utilities
 
 instance GenericRepository Order
 
-getOrderByCustomerId :: Int -> App (Maybe Order)
-getOrderByCustomerId sId = tell ["getOrderByCustomerId begin"] >> maybeHead . filter (\x -> oCId x == sId) <$> getList >>= \res -> tell ["getOrderByCustomerId end"] >> return res
+getOrderByCustomerId :: Int -> App Order
+getOrderByCustomerId sId =
+  let appArrEnt = filter (\x -> oCId x == sId) <$> getList
+   in tell ["getOrderByCustomerId begin"]
+        >> appArrEnt
+        >>= ( isValidArr
+                >=> (\res -> tell ["getOrderByCustomerId end"] >> return res)
+            )
 
 getOrdersByCustomerId :: Int -> App [Order]
-getOrdersByCustomerId sId = tell ["getOrdersByCustomerId begin"] >> filter (\x -> oCId x == sId) <$> getList >>= \res -> tell ["getOrdersByCustomerId end"] >> return res
+getOrdersByCustomerId sId =
+  let appArrEnt = filter (\x -> oCId x == sId) <$> getList
+   in tell ["getOrdersByCustomerId begin"] >> appArrEnt >>= \res -> tell ["getOrdersByCustomerId end"] >> return res

@@ -1,21 +1,23 @@
-{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 {-# HLINT ignore "Use lambda-case" #-}
 
 module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer) where
 
-import Data.Entities (Customer (customerAddress, customerId, customerName))
+import Data.Entities (Customer (customerAddress, customerId, customerName), Order (Order), Product (Product))
 import Data.Models (CustomerModel)
 import Mapping.Mapping (mappingCustomerToModel, mappingModelToCustomer)
 import Repositories.GenericRepository as R
+import qualified Services.GService as S
+import Startup (App)
 
--- getCustomer :: Int -> IO (Maybe Customer)
+-- getCustomer :: Int -> CustomerModel need up mapping Maybe -> App
 -- getCustomer = S.get getParam
 --   where
---     getParam :: Customer -> IO (Maybe [Order], [(Int, [Product])])
+--     getParam :: Customer -> App (Maybe [Order], [(Int, [Product])])
 --     getParam cust = R.getOrdersByCustomerId (customerId cust) >>= \ords -> getProductsWithOrdersId >>= \prOrd -> return (Just ords, prOrd)
 
-getModelCustomers :: IO [CustomerModel]
+getModelCustomers :: App [CustomerModel]
 getModelCustomers =
   getList
     >>= mapM
@@ -24,21 +26,18 @@ getModelCustomers =
             mappingCustomerToModel o (Just ord) . Just <$> getProductsWithOrdersId
       )
 
-getModelCustomerById :: Int -> IO (Maybe CustomerModel)
-getModelCustomerById custId = 
-  getEntityById custId >>= \maybeCusts -> 
-    case maybeCusts of 
-      Nothing -> return Nothing
-      Just value -> toMaybeIO $ return (mappingCustomerToModel value) <*> toMaybeIO (getOrdersByCustomerId custId) <*> toMaybeIO getProductsWithOrdersId
+getModelCustomerById :: Int -> App CustomerModel
+getModelCustomerById custId =
+  getEntityById custId >>= \cust -> (mappingCustomerToModel cust <$> toMaybeM (getOrdersByCustomerId custId)) <*> toMaybeM getProductsWithOrdersId
   where
-    toMaybeIO :: IO a -> IO (Maybe a)
-    toMaybeIO value = value >>= \val -> return $ Just val
+    toMaybeM :: (Monad m) => m a -> m (Maybe a)
+    toMaybeM value = value >>= \val -> return $ Just val
 
-addModelCustomer :: CustomerModel -> IO Int
+addModelCustomer :: CustomerModel -> App Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust
 
-removeModelCustomer :: (GenericRepository a) => Int -> IO (Maybe a)
+removeModelCustomer :: (GenericRepository a) => Int -> App a
 removeModelCustomer = removeEid
 
-editModelCustomer :: CustomerModel -> IO ()
+editModelCustomer :: CustomerModel -> App ()
 editModelCustomer newCust = editEntity $ mappingModelToCustomer newCust

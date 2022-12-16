@@ -6,6 +6,7 @@
 
 module Repositories.GRepository (EntityName (..), GenericRepository (..), ReadWriteDataEntity (..)) where
 
+import Control.Monad ((>=>))
 import qualified Control.Monad
 import Control.Monad.Reader (MonadReader (ask))
 import Control.Monad.State
@@ -34,10 +35,14 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a) => GenericRepository a
       getDataFromCache True _ cache = return cache
       getDataFromCache False appCache _ = readAllDataEntity (returnNameEntity (entityName :: EntityName a)) >>= \newCache -> put (setCache appCache newCache) >> return newCache
 
-  getEntityById :: Int -> App (Maybe a)
+  getEntityById :: Int -> App a
   getEntityById eid =
-    tell ["Get begin"] >> maybeHead . filter (\e -> entId e == eid) <$> getList >>= \res ->
-      tell ["Get end"] >> return res
+    let appArrEnt = filter (\e -> entId e == eid) <$> getList :: App [a]
+     in tell ["Get begin"]
+          >> appArrEnt
+          >>= ( isValidArr
+                  >=> (\res -> tell ["Get end"] >> return res)
+              )
 
   addEntity :: a -> App Int
   addEntity entity =
@@ -56,15 +61,15 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a) => GenericRepository a
      in tell ["removeEid begin"]
           >> appArrEnt
           >>= ( isValidArr
-                  Control.Monad.>=> ( \res ->
-                                        ( writeAllDataEntity . filter (\a -> entId a /= eid)
-                                            <$> listEnt
-                                        )
-                                          >> tell ["removeEid remove ent with id = " ++ show eid]
-                                          >> clearCache @a
-                                          >> tell ["removeEid end"]
-                                          >> return res
-                                    )
+                  >=> ( \res ->
+                          ( writeAllDataEntity . filter (\a -> entId a /= eid)
+                              <$> listEnt
+                          )
+                            >> tell ["removeEid remove ent with id = " ++ show eid]
+                            >> clearCache @a
+                            >> tell ["removeEid end"]
+                            >> return res
+                      )
               )
 
   editEntity :: a -> App ()
