@@ -2,7 +2,7 @@
 
 {-# HLINT ignore "Use lambda-case" #-}
 
-module Services.ProductServices (getModelProducts, getModelProductById, addModelProduct, removeModelProduct, editModelProduct) where
+module Services.ProductServices (getModelProducts, getModelProductById, addModelProduct, removeModelProduct, editModelProduct, getProduct) where
 
 import Data.Entities (Product (Product), Shop (Shop), productShopId)
 import Data.Models (ProductModel, ShopModel (ShopModel))
@@ -16,13 +16,13 @@ import Repositories.GenericRepository as R
 import Services.ApplyFilter ()
 import qualified Services.GService as S
 import Startup
-import Util.Utilities (unwrap)
+import Util.Utilities (toMaybeM)
 
--- getProduct :: Int -> App ProductModel
--- getProduct = S.get getShop
---   where
---     getShop :: Product -> App Shop
---     getShop = R.getEntityById . productShopId
+getProduct :: Int -> App ProductModel
+getProduct = S.get getShop
+  where
+    getShop :: Product -> App (Maybe Shop)
+    getShop prod = toMaybeM $ R.getEntityById (productShopId prod)
 
 getModelProducts :: App [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) <$> getList

@@ -3,7 +3,7 @@
 
 {-# HLINT ignore "Use lambda-case" #-}
 
-module Services.ShopServices (getModelShops, addModelShop, removeModelShop, editModelShop, getModelShopById) where
+module Services.ShopServices (getModelShops, addModelShop, removeModelShop, editModelShop, getModelShopById, getShop) where
 
 import Data.Entities (Product (..), Shop (..))
 import Data.Models (ShopModel (ShopModel))
@@ -11,13 +11,13 @@ import Mapping.Mapping (mappingModelToShop, mappingShopToModel)
 import Repositories.GenericRepository
 import qualified Services.GService as S
 import Startup
-import Util.Utilities (unwrap)
+import Util.Utilities (toMaybeM)
 
--- getShop :: Int -> App (Maybe ShopModel)
--- getShop = S.get getProducts
---   where
---     getProducts :: Shop -> App [Product]
---     getProducts shp = getProductsByShop shp
+getShop :: Int -> App ShopModel
+getShop = S.get getProducts
+  where
+    getProducts :: Shop -> App (Maybe [Product])
+    getProducts shp = toMaybeM $ getProductsByShop shp
 
 getModelShops :: App [ShopModel]
 getModelShops = map (`mappingShopToModel` Nothing) <$> getList

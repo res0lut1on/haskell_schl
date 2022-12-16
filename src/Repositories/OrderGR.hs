@@ -17,7 +17,7 @@ getOrderByCustomerId sId =
   let appArrEnt = filter (\x -> oCId x == sId) <$> getList
    in tell ["getOrderByCustomerId begin"]
         >> appArrEnt
-        >>= ( isValidArr
+        >>= ( isValidArr ("Cant get Order By Customer with id = " ++ show sId)
                 >=> (\res -> tell ["getOrderByCustomerId end"] >> return res)
             )
 

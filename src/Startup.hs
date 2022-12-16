@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 {-# HLINT ignore "Redundant bracket" #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 
 module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..), run) where
 
@@ -40,10 +41,10 @@ data AppConfig = AppConfig
     pageSize :: Int
   }
 
-data TypeException
-  = Error
-  | NotFound
-  deriving (Eq, Ord, Show)
+data TypeException = TypeException
+  { text :: String
+  }
+  deriving (Show)
 
 type LogMessage = [String]
 

@@ -2,7 +2,7 @@
 
 {-# HLINT ignore "Use lambda-case" #-}
 
-module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer) where
+module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer, getCustomer) where
 
 import Data.Entities (Customer (customerAddress, customerId, customerName), Order (Order), Product (Product))
 import Data.Models (CustomerModel)
@@ -10,12 +10,13 @@ import Mapping.Mapping (mappingCustomerToModel, mappingModelToCustomer)
 import Repositories.GenericRepository as R
 import qualified Services.GService as S
 import Startup (App)
+import Util.Utilities
 
--- getCustomer :: Int -> CustomerModel need up mapping Maybe -> App
--- getCustomer = S.get getParam
---   where
---     getParam :: Customer -> App (Maybe [Order], [(Int, [Product])])
---     getParam cust = R.getOrdersByCustomerId (customerId cust) >>= \ords -> getProductsWithOrdersId >>= \prOrd -> return (Just ords, prOrd)
+getCustomer :: Int -> App CustomerModel
+getCustomer = S.get getParam
+  where
+    getParam :: Customer -> App (Maybe [Order], Maybe [(Int, [Product])])
+    getParam cust = R.getOrdersByCustomerId (customerId cust) >>= \ords -> getProductsWithOrdersId >>= \prOrd -> return (Just ords, Just prOrd)
 
 getModelCustomers :: App [CustomerModel]
 getModelCustomers =
@@ -29,9 +30,6 @@ getModelCustomers =
 getModelCustomerById :: Int -> App CustomerModel
 getModelCustomerById custId =
   getEntityById custId >>= \cust -> (mappingCustomerToModel cust <$> toMaybeM (getOrdersByCustomerId custId)) <*> toMaybeM getProductsWithOrdersId
-  where
-    toMaybeM :: (Monad m) => m a -> m (Maybe a)
-    toMaybeM value = value >>= \val -> return $ Just val
 
 addModelCustomer :: CustomerModel -> App Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust

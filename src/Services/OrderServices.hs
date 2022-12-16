@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 {-# HLINT ignore "Use lambda-case" #-}
-module Services.OrderServices (getOrders, addModelOrder, removeModelOrder, editModelOrder) where
+module Services.OrderServices (getOrders, addModelOrder, removeModelOrder, editModelOrder, getModelOrderById, getOrder) where
 
+import Data.Entities
 import Data.Models (OrderModel)
 import Mapping.Mapping (mappingModelToOrder, mappingOrderToModel)
 import Repositories.CustomerGR (getCustomerByOrderId)
@@ -15,29 +16,27 @@ import Repositories.GRepository
         removeEid
       ),
   )
+import qualified Repositories.GenericRepository as R
 import Repositories.ProductGR (getProductsByOrderId)
+import qualified Services.GService as S
 import Startup
+import Util.Utilities (toMaybeM)
 
--- getOrder :: Int -> IO (Maybe OrderModel)
--- getOrder = S.get getParam
---   where
---     getParam :: Order -> IO (Maybe [Product], Customer) -- у заказа же всегда есть Customer? Или нужно сделать тоже Maybe Customer
---     getParam ord = R.getCustomerByOrder ord >>= \maybeCustomer -> R.getProductsByOrder ord >>= \prods -> return (Just prods, maybeCustomer)
+getOrder :: Int -> App OrderModel
+getOrder = S.get getParam
+  where
+    getParam :: Order -> App (Maybe [Product], Customer)
+    getParam ord = R.getCustomerByOrder ord >>= \maybeCustomer -> R.getProductsByOrder ord >>= \prods -> return (Just prods, maybeCustomer)
 
 getOrders :: App [OrderModel]
 getOrders = map (\o -> mappingOrderToModel o Nothing Nothing) <$> getList
 
--- getModelOrderById :: Int -> App OrderModel
--- getModelOrderById orderID =
---   let prods = getProductsByOrderId orderID
---       cust = getCustomerByOrderId orderID
---       ords = getEntityById orderID
---    in ords >>= \maybeOrd -> case maybeOrd of
---         Nothing -> return Nothing
---         Just value -> (mappingOrderToModel value) <*> toMaybeIO prods <*> cust
---   where
---     toMaybeIO :: IO a -> IO (Maybe a)
---     toMaybeIO value = value >>= \val -> return $ Just val
+getModelOrderById :: Int -> App OrderModel
+getModelOrderById orderID =
+  let prods = getProductsByOrderId orderID
+      cust = getCustomerByOrderId orderID
+      ords = getEntityById orderID
+   in (mappingOrderToModel <$> ords) <*> toMaybeM prods <*> toMaybeM cust
 
 addModelOrder :: OrderModel -> App Int
 addModelOrder item = addEntity $ mappingModelToOrder item
