@@ -29,7 +29,10 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
               >> ( if null cacheData
                      then
                        readAllDataEntity (returnNameEntity (entityName :: EntityName a))
-                         >>= \newCache -> put (setCache cache newCache) >> return newCache
+                         >>= \newCache ->
+                           put (setCache cache newCache)
+                             >> tell ["Method getList end"]
+                             >> return newCache
                      else
                        tell ["Method getList end"]
                          >> return cacheData
