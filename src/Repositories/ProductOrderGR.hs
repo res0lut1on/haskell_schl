@@ -7,3 +7,4 @@ import Repositories.GRepository
 import ReadWrite.ReadWriteProductOrder ()
 
 instance GenericRepository ProductOrder
+

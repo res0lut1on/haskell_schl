@@ -16,6 +16,8 @@ module Util.FileUtil
 where
 
 import Control.Monad
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.RWS (MonadReader (ask), MonadTrans (lift))
 import Data.Context
   ( orders,
     productOrder,
@@ -29,14 +31,8 @@ import Data.RepEntity.BaseEntity
 import GHC.IO.Handle
 import Lib (split)
 import LibFold (toLowerCase)
+import Startup
 import System.IO
-
-----------------------------------------------------------------------------------------------------------------------
-
-getRelativePathToHere :: FilePath
-getRelativePathToHere = "/home/pineapple/doc/project_cabal/src/Data/ContextTxt"
-
-----------------------------------------------------------------------------------------------------------------------
 
 type CustomerTxtModel = String
 
@@ -112,24 +108,28 @@ mappProdFromTxt line =
 
 --------------------------------------------------------------------------------------------------------------------------
 
-writeEntWhile :: (BaseEntity a, MappEntity a) => [a] -> IO ()
+writeEntWhile :: (BaseEntity a, MappEntity a) => [a] -> App ()
 writeEntWhile ents =
-  openFile (getRelativePathToHere ++ "/" ++ toLowerCase (entName (head ents)) ++ ".txt") WriteMode >>= \outh ->
-    forM_
-      ents
-      (`entloop` outh)
-      >> hClose outh
+  ask >>= \config ->
+    liftIO $
+      openFile (filePath config ++ "/" ++ toLowerCase (entName (head ents)) ++ ".txt") WriteMode >>= \outh ->
+        forM_
+          ents
+          (`entloop` outh)
+          >> hClose outh
   where
     entloop es outh =
       hPutStrLn outh (mappEntityTo es)
 
-readEntityData :: String -> IO EntityContent
+readEntityData :: String -> App EntityContent
 readEntityData eName =
-  openFile (getRelativePathToHere ++ "/" ++ toLowerCase eName ++ ".txt") ReadMode >>= \inh ->
-    hGetContents inh >>= \contents ->
-      putStrLn contents
-        >> hClose inh
-        >> return contents
+  ask >>= \config ->
+    liftIO $
+      openFile (filePath config ++ "/" ++ toLowerCase eName ++ ".txt") ReadMode >>= \inh ->
+        hGetContents inh >>= \contents ->
+          putStrLn contents
+            >> hClose inh
+            >> return contents
 
 instance MappEntity Customer where
   mappEntityTo :: Customer -> String
@@ -163,12 +163,12 @@ instance MappEntity ProductOrder where
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-addEnt :: (MappEntity a, BaseEntity a) => a -> IO ()
-addEnt ent = appendFile (getRelativePathToHere ++ "/" ++ entName ent ++ ".txt") (mappEntityTo (entType ent))
+addEnt :: (MappEntity a, BaseEntity a) => a -> App ()
+addEnt ent = ask >>= \config -> liftIO $ appendFile (filePath config ++ "/" ++ entName ent ++ ".txt") (mappEntityTo (entType ent))
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-initDataBase :: IO ()
+initDataBase :: App ()
 initDataBase =
   writeEntWhile сustomers
     >> writeEntWhile products

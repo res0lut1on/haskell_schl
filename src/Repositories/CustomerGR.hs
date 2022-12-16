@@ -3,16 +3,21 @@
 
 module Repositories.CustomerGR (getCustomerByOrderId, getCustomerByOrder) where
 
+import Control.Monad.Writer (MonadWriter (tell))
 import Data.Entities
 import ReadWrite.ReadWriteCustomer ()
 import Repositories.GRepository
 import Repositories.OrderGR ()
+import Startup
 
 instance GenericRepository Customer
 
-getCustomerByOrder :: Order -> IO (Maybe Customer)
-getCustomerByOrder (Order _ custId _) = getEntityById custId
+getCustomerByOrder :: Order -> App Customer
+getCustomerByOrder (Order _ custId _) = tell ["getCustomerByOrder begin"] >> getEntityById custId >>= \res -> tell ["getCustomerByOrder end"] >> return res
 
-getCustomerByOrderId :: Int -> IO (Maybe Customer)
+getCustomerByOrderId :: Int -> App Customer
 getCustomerByOrderId orderID =
-  (getList @Order) >>= (getCustomerByOrder . head) . filter (\x -> orderId x == orderID)
+  tell ["getCustomerByOrderId begin"]
+    >> (getList @Order)
+    >>= (getCustomerByOrder . head) . filter (\x -> orderId x == orderID)
+    >>= \res -> tell ["getCustomerByOrderId end"] >> return res
