@@ -1,17 +1,20 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Util.CacheStyle (CacheStyle (..)) where
 
+import Control.Monad.State
 import Data.Entities
 import Startup
-import Control.Monad.State 
 
 class CacheStyle a where
   getCache :: AppCache -> [a]
 
   setCache :: AppCache -> [a] -> AppCache
 
-  updateCache ::  AppCache -> [a] -> App() 
+  clearCache :: App ()
+  clearCache = get >>= \appState -> put $ setCache appState ([] :: [a])
 
 instance CacheStyle Customer where
   getCache :: AppCache -> [Customer]

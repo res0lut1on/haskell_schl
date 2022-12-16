@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Repositories.ProductGR (getProductsByShop, getProductsByOrder, getProductsWithOrdersId, getProductsByOrderId) where
+module Repositories.ProductGR (getProductsByShop, getProductsByOrderId, getProductsWithOrdersId) where
 
 import Data.Entities
   ( Order (orderId),
@@ -15,32 +15,36 @@ import ReadWrite.ReadWriteProduct ()
 import Repositories.GRepository (GenericRepository (getList))
 import Repositories.OrderGR ()
 import Repositories.ProductOrderGR ()
+import Startup
+import Control.Monad.Writer (MonadWriter(tell))
+import qualified Control.Monad
 
 instance GenericRepository Product
 
-getProductsByShop :: Shop -> IO [Product]
-getProductsByShop (Shop sId _ _) = filter (\x -> productShopId x == sId) <$> getList
+getProductsByShop :: Shop -> App [Product]
+getProductsByShop (Shop sId _ _) = tell ["getProductsByShop begin"] >> filter (\x -> productShopId x == sId) <$> getList >>= \res -> tell ["getProductsByShop end"] >> return res
 
-getProductsByOrder :: Order -> IO [Product]
-getProductsByOrder ord = getProductsByOrderId $ orderId ord
+-- getProductsByOrder :: Order -> App [Product]
+-- getProductsByOrder ord = tell ["getProductsByOrder start"] >> getProductsByOrderId $ orderId ord >>= \res -> tell ["getProductsByOrder end"] 
 
-getProductsByOrderId :: Int -> IO [Product]
+getProductsByOrderId :: Int -> App [Product]
 getProductsByOrderId sId =
+  tell ["getProductsByOrderId begin"] >>
   getList @ProductOrder >>= \out ->
     getList @Product >>= \allProduct ->
-      return $
-        getProductsByOrderId' (filter (\a -> opId a == sId) out) allProduct
+      (\res -> tell ["getProductsByOrderId "] >> return res) (
+        getProductsByOrderId' (filter (\a -> opId a == sId) out) allProduct )
   where
     getProductsByOrderId' :: [ProductOrder] -> [Product] -> [Product]
     getProductsByOrderId' (x : xs) allProduct = head (filter (\a -> productId a == poId x) allProduct) : getProductsByOrderId' xs allProduct
     getProductsByOrderId' [] _ = []
 
-getProductsWithOrdersId :: IO [(Int, [Product])]
+getProductsWithOrdersId :: App [(Int, [Product])]
 getProductsWithOrdersId =
-  getList @Order >>= \out ->
-    mapM
-      ( \x ->
-          getProductsByOrderId (orderId x) >>= \out ->
-            return (orderId x, out)
-      )
-      out
+  tell ["getProductsWithOrdersId begin"] >>
+  getList @Order >>= (mapM
+   (\ x
+      -> getProductsByOrderId (orderId x)
+           >>= \ out -> return (orderId x, out))
+   Control.Monad.>=>
+     (\ res -> tell ["getProductsWithOrdersId end"] >> return res))

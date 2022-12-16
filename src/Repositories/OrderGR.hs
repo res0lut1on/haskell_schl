@@ -6,11 +6,13 @@ import Data.Entities
 import Repositories.GRepository
 import ReadWrite.ReadWriteOrder ()
 import Util.Utilities
+import Startup
+import Control.Monad.Writer (MonadWriter(tell))
 
 instance GenericRepository Order
 
-getOrderByCustomerId :: Int -> IO (Maybe Order)
-getOrderByCustomerId sId = maybeHead . filter (\x -> oCId x == sId) <$> getList
+getOrderByCustomerId :: Int -> App (Maybe Order)
+getOrderByCustomerId sId = tell ["getOrderByCustomerId begin"] >> maybeHead . filter (\x -> oCId x == sId) <$> getList >>= \res -> tell ["getOrderByCustomerId end"] >> return res
 
-getOrdersByCustomerId :: Int -> IO [Order]
-getOrdersByCustomerId sId = filter (\x -> oCId x == sId) <$> getList
+getOrdersByCustomerId :: Int -> App [Order]
+getOrdersByCustomerId sId = tell ["getOrdersByCustomerId begin"] >> filter (\x -> oCId x == sId) <$> getList >>= \res -> tell ["getOrdersByCustomerId end"] >> return res

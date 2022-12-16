@@ -2,9 +2,12 @@
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Repositories.GRepository (EntityName (..), GenericRepository (..), ReadWriteDataEntity (..)) where
 
+import qualified Control.Monad
+import Control.Monad.Reader (MonadReader (ask))
 import Control.Monad.State
 import Control.Monad.Writer (MonadWriter (tell))
 import Data.RepEntity.BaseEntity (BaseEntity (..), EntityName (returnNameEntity))
@@ -15,27 +18,21 @@ import Services.ApplyFilter (pagination)
 import Startup (App, AppCache, AppConfig (pageSize))
 import Util.CacheStyle
 import Util.Utilities
-import Control.Monad.Reader (MonadReader(ask))
 
-class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
+class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a) => GenericRepository a where
   getList :: App [a]
-  getList = return []
-
-  -- getList =
-  --   tell ["Method getList begin"]
-  --     >> get
-  --     >>= \cache ->
-  --       let cacheData = getCache cache :: [a]
-  --        in getDataFromCache (not (null cacheData)) cache cacheData >>= \result ->
-  --             tell ["Method getList end"]
-  --               >> return result
-  --   where
-  --     getDataFromCache :: Bool -> AppCache -> [a] -> App [a]
-  --     getDataFromCache True _ cache = return cache
-  --     getDataFromCache False appCache _ = (readAllDataEntity (returnNameEntity (entityName :: EntityName a))) >>= \newCache -> put (setCache appCache newCache) >> retrun newCache
-
-  --   name = returnNameEntity (entityName :: EntityName a)
-  --  in readAllDataEntity name
+  getList =
+    tell ["Method getList begin"]
+      >> get
+      >>= \cache ->
+        let cacheData = getCache cache :: [a]
+         in getDataFromCache (not (null cacheData)) cache cacheData >>= \result ->
+              tell ["Method getList end"]
+                >> return result
+    where
+      getDataFromCache :: Bool -> AppCache -> [a] -> App [a]
+      getDataFromCache True _ cache = return cache
+      getDataFromCache False appCache _ = readAllDataEntity (returnNameEntity (entityName :: EntityName a)) >>= \newCache -> put (setCache appCache newCache) >> return newCache
 
   getEntityById :: Int -> App (Maybe a)
   getEntityById eid =
@@ -44,24 +41,51 @@ class (BaseEntity a, ReadWriteDataEntity a) => GenericRepository a where
 
   addEntity :: a -> App Int
   addEntity entity =
-    tell ["AddEntity begin"] >> (\newId -> (\_ -> newId) (addNewEnt (entType entity) newId)) . getLastId <$> (getList :: IO [a]) >>= \res ->
-      tell ["AddEntity end"] >> clearCache @a >> return res
+    let newId = getLastId <$> (getList :: App [a])
+     in tell ["AddEntity begin"] >> newId >>= \res ->
+          addNewEnt (entType entity) res
+            >> tell ["AddEntity add"]
+            >> clearCache @a
+            >> tell ["AddEntity end"]
+            >> newId
 
-  removeEid :: Int -> App (Maybe a)
+  removeEid :: Int -> App a
   removeEid eid =
-    let listEnt = (getList :: IO [a])
-        ent = filter (\a -> entId a == eid) <$> listEnt
-     in tell ["removeEid begin"] >> (writeAllDataEntity . filter (\a -> entId a /= eid) <$> listEnt) >> maybeHead <$> ent >>= \res -> isValid res >>= clearCache @a >> tell["removeEid end"] >> return res
+    let listEnt = (getList :: App [a])
+        appArrEnt = filter (\a -> entId a == eid) <$> listEnt
+     in tell ["removeEid begin"]
+          >> appArrEnt
+          >>= ( isValidArr
+                  Control.Monad.>=> ( \res ->
+                                        ( writeAllDataEntity . filter (\a -> entId a /= eid)
+                                            <$> listEnt
+                                        )
+                                          >> tell ["removeEid remove ent with id = " ++ show eid]
+                                          >> clearCache @a
+                                          >> tell ["removeEid end"]
+                                          >> return res
+                                    )
+              )
 
-  -- -- (getList :: IO [a]) >>= (writeAllDataEntity . filter (\a -> entId a /= eid))
-
-  -- editEntity :: a -> App ()
-  -- editEntity newEnt = tell ["editEntity begin"] >> (getList :: IO [a]) >>= ((writeAllDataEntity . addInTheEnd newEnt) . filter (\a -> entId a /= entId newEnt)) >>= \res -> 
-  --   clearCache @a >> tell["editEntity end"] >> return res
+  editEntity :: a -> App ()
+  editEntity newEnt =
+    let appArrEnt = filter (\a -> entId a == entId newEnt) <$> (getList :: App [a])
+     in tell ["editEntity begin"] >> appArrEnt >>= \arrEnt ->
+          isValidArr arrEnt
+            >> writeAllDataEntity (addInTheEnd newEnt arrEnt)
+            >> tell ["editEntity edit complete with entity " ++ show (entId newEnt)]
+            >> clearCache @a
+            >> tell ["editEntity end"]
 
   search :: (SearchModel b) => (b -> [a] -> [a]) -> b -> App [a]
-  search filterModel searchModel = tell["search begin"] >> ask >>= \config ->  getList >>= (\res ->
-    tell ["search end"] >> return res) . pagination (getPageNumber searchModel) (pageSize config) . filterModel searchModel
+  search filterModel searchModel =
+    tell ["search begin"] >> ask >>= \config ->
+      getList
+        >>= ( \res ->
+                tell ["search end"] >> return res
+            )
+          . pagination (getPageNumber searchModel) (pageSize config)
+          . filterModel searchModel
 
 getLastId :: (BaseEntity a) => [a] -> Int
 getLastId xs = entId (last xs) + 1

@@ -1,6 +1,8 @@
 module Util.Utilities
   ( maybeHead,
     unwrap,
+    isValidArr,
+    isValid,
   )
 where
 
