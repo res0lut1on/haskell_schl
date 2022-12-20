@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module HtmlGenerate.Check (mainPage, orderPage) where
+module HtmlGenerate.Check (mainPage, generateOrderPage) where
 
 import Control.Monad.RWS
 import Data.Entities (Order (oNumber))
@@ -22,38 +22,23 @@ mainPage = docTypeHtml $ do
     a "A list of orders:" ! href "/Orders"
     a "A list of products:" ! href "/Products"
 
-generateOrderPage xs = writeFile ("/home/pineapple/doc/project_cabal/src/Pages/MainPage.html") $
-  renderHtml $
-    docTypeHtml $ do
-      H.head $ do
-        H.title "Order Page"
-      body $ do
-        table ! class_ "table table-striped table-hover" $
-          do
-            tr $ do
-              th "Number Order"
-              th "Refer to order details"
-            forM_
-              xs
-              ( \ord -> do
-                  tr $ do
-                    td $ toHtml $ orderModelNumber ord
-                    td $ toHtml ("http://localhost:" ++ show avaibleport ++ "/" ++ orderModelNumber ord)
-              )
+generateOrderPage :: [OrderModel] -> Html
+generateOrderPage xs =
+  docTypeHtml $ do
+    H.head $ do
+      H.title "Order Page"
+    body $ do
+      table ! class_ "table table-striped table-hover" $
+        do
+          tr $ do
+            th "Number Order"
+            th "Refer to order details"
+          forM_
+            xs
+            ( \ord -> do
+                tr $ do
+                  td $ toHtml $ orderModelNumber ord
+                  td $ toHtml ("http://localhost:" ++ show avaibleport ++ "/" ++ orderModelNumber ord)
+            )
 
-rend :: IO ()
-rend =
-  let defaultConnectInfo =
-        defaultConnectInfo
-          { connectHost = "192.168.0.1",
-            connectPort = "1433",
-            connectDatabase = "HaskellDatabase",
-            connectUser = "dbo",
-            connectPassword = "some_password"
-          }
-   in do
-        conn <- connect defaultConnectInfo
-        [Only num] <- MSSQL.sql conn "SELECT 111" :: IO [Only Int]
-        writeFile ("/home/pineapple/doc/project_cabal/src/Pages/MainPage.html") $ renderHtml $ orderPage [[num]]
 
-instance ToMarkup Order

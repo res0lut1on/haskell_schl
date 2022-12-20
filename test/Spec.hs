@@ -8,14 +8,15 @@ where
 import Control.Exception
 import Control.Monad.Trans
 import Controllers.Home as Home
+import Controllers.Order as OrderContr
 import qualified Data.ByteString.Lazy.Internal as BS
 import Data.Text
 import qualified Data.Text as T
+import Environment ()
 import Network.HTTP.Types
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Util.Utilities (mainRoute)
-import Environment ()
 
 main :: IO ()
 main = do
@@ -26,6 +27,5 @@ main = do
 
 app :: Application
 app req respond = case mainRoute (pathInfo req) of
-  "" -> respond Home.index
-  "MainPage" -> respond $ responseLBS status200 [("Content-Type", "text/plain")] $ BS.packChars ""
-  "Orders" -> respond
+  "Orders" -> OrderContr.orderController req (pathInfo req) >>= \res -> respond res
+  _ -> respond Home.index

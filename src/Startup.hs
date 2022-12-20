@@ -1,10 +1,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore "Redundant bracket" #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
+{-# OPTIONS_GHC -Wno-partial-fields #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..), run) where
+module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..), run, AppData(..)) where
 
 import Control.Monad.Error
 import Control.Monad.Except
@@ -61,17 +61,9 @@ newtype TypeException = ElementNotFound String
 
 run :: App a -> IO (AppResult a)
 run app =
-  let defaultConnectInfo =
-        defaultConnectInfo
-          { connectHost = "192.168.0.1",
-            connectPort = "1433",
-            connectDatabase = "HaskellDatabase",
-            connectUser = "dbo",
-            connectPassword = "some_password"
-          }
-      appstate = AppCache [] [] [] [] []
+  let appstate = AppCache [] [] [] [] []
    in do
-        conn <- connect defaultConnectInfo
+        conn <- connect Enviroment.defaultConnectInfo
         let config = AppConfig Enviroment.filePath (Enviroment.pageSize) (conn)
         let full = runStateT (runReaderT (runWriterT (runExceptT (runApp app))) config) appstate
         ((errors, logsApp), stateApp) <- full
