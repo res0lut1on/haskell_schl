@@ -3,7 +3,7 @@
 
 module Mapping.GMapping (GenericMapping (..)) where
 
-import Data.Entities (Customer (..), Order (..), Product (Product), Shop (..), productColor, productId, productName, productPrice)
+import Data.Entities (Customer (..), Order (..), Product (..), Shop (..), productColor, productId, productName, productPrice)
 import Data.Maybe (fromMaybe)
 import Data.Models (CustomerModel (..), OrderModel (..), ProductModel (ProductModel), ShopModel (..), productModelColor, productModelId, productModelName, productModelPrice, productModelShop)
 
@@ -17,12 +17,24 @@ instance GenericMapping ProductModel Product where
   toModel :: ProductModel -> Product
   toModel pM =
     let shpId = shopModelId <$> productModelShop pM
-     in Product (productModelId pM) (fromMaybe (-1) shpId) (productModelName pM) (productModelPrice pM) (productModelColor pM)
+     in Product
+          { productId = productModelId pM,
+            productShopId = fromMaybe (-1) shpId,
+            productName = productModelName pM,
+            productPrice = productModelPrice pM,
+            productColor = productModelColor pM
+          }
 
 instance GenericMapping Product ProductModel where
   toModel :: Product -> ProductModel
   toModel prod =
-    ProductModel (productId prod) Nothing (productName prod) (productPrice prod) (productColor prod)
+    ProductModel
+      { productModelId = productId prod,
+        productModelShop = Nothing,
+        productModelName = productName prod,
+        productModelPrice = productPrice prod,
+        productModelColor = productColor prod
+      }
 
 instance GenericMapping Order OrderModel where
   toModel :: Order -> OrderModel

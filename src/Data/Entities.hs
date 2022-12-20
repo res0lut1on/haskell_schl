@@ -6,52 +6,34 @@ module Data.Entities
     Shop (..),
     Order (..),
     ProductOrder (..),
-    productId,
-    productShopId,
-    productName,
-    productPrice,
-    productColor,
   )
 where
 
 import Data.CommonData (Color (..))
 
-type ProductId = Int
-
-type ProductShopId = Int
-
-type ProductName = String
-
-type ProductPrice = Double
-
-data Product = Product ProductId ProductShopId ProductName ProductPrice Color
-  deriving (Show)
-
-productId :: Product -> ProductId
-productId (Product prodId _ _ _ _) = prodId
-
-productShopId :: Product -> ProductShopId
-productShopId (Product _ pshopId _ _ _) = pshopId
-
-productName :: Product -> ProductName
-productName (Product _ _ name _ _) = name
-
-productPrice :: Product -> ProductPrice
-productPrice (Product _ _ _ price _) = price
-
-productColor :: Product -> Color
-productColor (Product _ _ _ _ color) = color
+data Product = Product
+  { productId :: Int,
+    productShopId :: Int,
+    productName :: String,
+    productPrice :: Double,
+    productColor :: Color
+  }
 
 instance Eq Product where
   (==) :: Product -> Product -> Bool
   x == y = productId x == productId y
+
+instance Show Product where
+  show (Product _ prodShopId name price clr) = "(" ++ show prodShopId ++ ", " ++ toSqlQuotes name ++ "," ++ show price ++ ", " ++ toSqlQuotes (show clr) ++ ")"
 
 data Customer = Customer
   { customerId :: Int,
     customerName :: String,
     customerAddress :: String
   }
-  deriving (Show)
+
+instance Show Customer where
+  show (Customer _ custName custAdd) = "(" ++ toSqlQuotes custName ++ "," ++ toSqlQuotes custAdd ++ ")"
 
 instance Eq Customer where
   (==) :: Customer -> Customer -> Bool
@@ -64,7 +46,7 @@ data Shop = Shop
   }
 
 instance Show Shop where
-  show (Shop _ n _) = n
+  show (Shop _ name address) = "(" ++ toSqlQuotes name ++ "," ++ toSqlQuotes address ++ ")"
 
 instance Eq Shop where
   (==) :: Shop -> Shop -> Bool
@@ -75,19 +57,26 @@ data Order = Order
     oCId :: Int,
     oNumber :: String
   }
-  deriving (Show)
 
 instance Eq Order where
   (==) :: Order -> Order -> Bool
   x == y = orderId x == orderId y
+
+instance Show Order where
+  show (Order _ ocid onum) = "(" ++ show ocid ++ "," ++ toSqlQuotes onum ++ ")"
 
 data ProductOrder = ProductOrder
   { productOrderId :: Int,
     poId :: Int,
     opId :: Int
   }
-  deriving (Show)
 
-instance Eq ProductOrder  where
+instance Show ProductOrder where
+  show (ProductOrder _ pId oId) = "(" ++ show pId ++ "," ++ show oId ++ ")"
+
+instance Eq ProductOrder where
   (==) :: ProductOrder -> ProductOrder -> Bool
   x == y = productOrderId x == productOrderId y
+
+toSqlQuotes :: String -> String
+toSqlQuotes str = "'" ++ str ++ "'"

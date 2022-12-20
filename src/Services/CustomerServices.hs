@@ -1,33 +1,24 @@
-{-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use lambda-case" #-}
 
 module Services.CustomerServices (getModelCustomers, getModelCustomerById, addModelCustomer, removeModelCustomer, editModelCustomer, getCustomer) where
 
-import Data.Entities (Customer (customerAddress, customerId, customerName), Order, Product (Product))
+import Data.Entities (Customer (customerAddress, customerId, customerName), Order (Order), Product (Product))
 import Data.Models (CustomerModel)
 import Mapping.Mapping (mappingCustomerToModel, mappingModelToCustomer)
 import Repositories.GenericRepository as R
 import qualified Services.GService as S
+import Startup (App)
+import Util.Utilities
 
-getCustomer :: Int -> IO (Maybe Customer)
+getCustomer :: Int -> App CustomerModel
 getCustomer = S.get getParam
   where
-    getParam :: Customer -> IO (Maybe [Order], [(Int, [Product])])
-    getParam cust = R.getOrdersByCustomerId (customerId cust) >>= \ords -> getProductsWithOrdersId >>= \prOrd -> return (Just ords, prOrd)
+    getParam :: Customer -> App (Maybe [Order], Maybe [(Int, [Product])])
+    getParam cust = R.getOrdersByCustomerId (customerId cust) >>= \ords -> getProductsWithOrdersId >>= \prOrd -> return (Just ords, Just prOrd)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-getModelCustomers :: IO [CustomerModel]
+getModelCustomers :: App [CustomerModel]
 getModelCustomers =
   getList
     >>= mapM
@@ -36,24 +27,15 @@ getModelCustomers =
             mappingCustomerToModel o (Just ord) . Just <$> getProductsWithOrdersId
       )
 
-getModelCustomerById :: Int -> IO (Maybe CustomerModel)
+getModelCustomerById :: Int -> App CustomerModel
 getModelCustomerById custId =
-  getOrdersByCustomerId custId >>= \orders ->
-    getEntityById custId
-      >>= \maybeCustomer ->
-        getProductsWithOrdersId >>= \prods ->
-          return $
-            maybeCustomer >>= \customer ->
-              return $ mappingCustomerToModel customer (return orders) (return prods) -- <$>  --desugaring in book
+  getEntityById custId >>= \cust -> (mappingCustomerToModel cust <$> toMaybeM (getOrdersByCustomerId custId)) <*> toMaybeM getProductsWithOrdersId
 
--- getModelCustomerById :: Int -> IO (Maybe CustomerModel)
--- getModelCustomerById custId = getEntityById custId >>= \maybeCusts -> return (mappingCustomerToModel <$> maybeCusts <*> getOrdersByCustomerId custId <*> getProductsWithOrdersId custId)
-
-addModelCustomer :: CustomerModel -> IO Int
+addModelCustomer :: CustomerModel -> App Int
 addModelCustomer newCust = addEntity $ mappingModelToCustomer newCust
 
-removeModelCustomer :: (GenericRepository a) => Int -> IO (Maybe a)
+removeModelCustomer :: (GenericRepository a) => Int -> App a
 removeModelCustomer = removeEid
 
-editModelCustomer :: CustomerModel -> IO ()
+editModelCustomer :: CustomerModel -> App ()
 editModelCustomer newCust = editEntity $ mappingModelToCustomer newCust

@@ -15,34 +15,31 @@ import Mapping.MappingParam ()
 import Repositories.GenericRepository as R
 import Services.ApplyFilter ()
 import qualified Services.GService as S
-import Util.Utilities (unwrap)
+import Startup
+import Util.Utilities (toMaybeM)
 
-getProduct :: Int -> IO (Maybe ProductModel)
+getProduct :: Int -> App ProductModel
 getProduct = S.get getShop
   where
-    getShop :: Product -> IO (Maybe Shop)
-    getShop = R.getEntityById . productShopId
+    getShop :: Product -> App (Maybe Shop)
+    getShop prod = toMaybeM $ R.getEntityById (productShopId prod)
 
-getModelProducts :: IO [ProductModel]
+getModelProducts :: App [ProductModel]
 getModelProducts = map (`mappingProductToModel` Nothing) <$> getList
 
-getModelProductById :: Int -> IO (Maybe ProductModel)
+getModelProductById :: Int -> App ProductModel
 getModelProductById prID =
-  unwrap $
-    getEntityById
-      prID
-      >>= \maybeProd ->
-        return $
-          maybeProd >>= \prod ->
-            return $
-              getEntityById (productShopId prod)
-                >>= \shp -> return $ Just $ mappingProductToModel prod shp
+  getEntityById
+    prID
+    >>= \prod ->
+      getEntityById (productShopId prod)
+        >>= \shp -> return $ mappingProductToModel prod (Just shp)
 
-addModelProduct :: ProductModel -> IO Int
+addModelProduct :: ProductModel -> App Int
 addModelProduct item = addEntity $ mappingModelToProduct item
 
-removeModelProduct :: (GenericRepository a) => Int -> IO (Maybe a)
+removeModelProduct :: (GenericRepository a) => Int -> App a
 removeModelProduct = removeEid
 
-editModelProduct :: ProductModel -> IO ()
+editModelProduct :: ProductModel -> App ()
 editModelProduct item = editEntity $ mappingModelToProduct item

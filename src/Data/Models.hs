@@ -3,32 +3,18 @@ module Data.Models
     OrderModel (..),
     ProductModel (..),
     CustomerModel (..),
-    productModelId,
-    productModelShop,
-    productModelName,
-    productModelPrice,
-    productModelColor,
   )
 where
 
 import Data.CommonData (Color)
 
-data ProductModel = ProductModel Int (Maybe ShopModel) String Double Color
-
-productModelId :: ProductModel -> Int
-productModelId (ProductModel pId _ _ _ _) = pId
-
-productModelShop :: ProductModel -> Maybe ShopModel
-productModelShop (ProductModel _ ps _ _ _) = ps
-
-productModelName :: ProductModel -> String
-productModelName (ProductModel _ _ name _ _) = name
-
-productModelPrice :: ProductModel -> Double
-productModelPrice (ProductModel _ _ _ pmp _) = pmp
-
-productModelColor :: ProductModel -> Color
-productModelColor (ProductModel _ _ _ _ color) = color
+data ProductModel = ProductModel
+  { productModelId :: Int,
+    productModelShop :: Maybe ShopModel,
+    productModelName :: String,
+    productModelPrice :: Double,
+    productModelColor :: Color
+  }
 
 instance Show ProductModel where
   show (ProductModel item1 item2 item3 item4 _) = show item1 ++ ", " ++ show item2 ++ ", " ++ item3 ++ ", " ++ show item4 ++ "\n"
@@ -59,7 +45,6 @@ data CustomerModel = CustomerModel
     customerModelAddress :: String,
     customerModelOrders :: Maybe [OrderModel]
   }
+
 instance Show CustomerModel where
   show (CustomerModel item1 item2 item3 _) = "\n" ++ show item1 ++ ", " ++ item2 ++ ", " ++ item3
-
-

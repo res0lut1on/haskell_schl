@@ -2,8 +2,8 @@
 
 module Repositories.ShopGR () where
 
+import Data.DataBase.ReadWriteDataBase.RWDBShop ()
 import Data.Entities
-import ReadWrite.ReadWriteShop ()
 import Repositories.GRepository
 
 instance GenericRepository Shop
