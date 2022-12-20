@@ -21,7 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- ms-tds 
+- mssql-simple 
+- network
+- blaze-html
 - mtl
+- text
 
 ghc-options:
 - -Wall
@@ -58,3 +63,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - sample
+    - mssql-simple
+

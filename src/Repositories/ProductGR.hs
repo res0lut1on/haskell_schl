@@ -5,6 +5,7 @@ module Repositories.ProductGR (getProductsByShop, getProductsByOrderId, getProdu
 
 import qualified Control.Monad
 import Control.Monad.Writer (MonadWriter (tell))
+import Data.DataBase.ReadWriteDataBase.RWDBProduct ()
 import Data.Entities
   ( Order (orderId),
     Product,

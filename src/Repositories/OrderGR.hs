@@ -4,8 +4,8 @@ module Repositories.OrderGR (getOrderByCustomerId, getOrdersByCustomerId) where
 
 import Control.Monad
 import Control.Monad.Writer (MonadWriter (tell))
+import Data.DataBase.ReadWriteDataBase.RWDBOrder ()
 import Data.Entities
-import ReadWrite.ReadWriteOrder ()
 import Repositories.GRepository
 import Startup
 import Util.Utilities

@@ -4,7 +4,7 @@
 {-# HLINT ignore "Redundant bracket" #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 
-module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..), run) where
+module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..)) where
 
 import Control.Monad.Error
 import Control.Monad.Except
@@ -13,6 +13,7 @@ import Control.Monad.State
 import Control.Monad.Writer
 import Data.Entities
 import qualified Environment as Enviroment
+import Database.MSSQLServer.Connection (Connection)
 
 newtype App a = App
   { runApp :: ExceptT TypeException (WriterT LogMessage (ReaderT AppConfig (StateT AppCache IO))) a
@@ -38,7 +39,8 @@ data AppCache = AppCache
 
 data AppConfig = AppConfig
   { filePath :: String,
-    pageSize :: Int
+    pageSize :: Int,
+    connectionString :: Connection
   }
 
 data TypeException = TypeException
@@ -60,9 +62,10 @@ data AppData a
   | AppError {message :: String}
   deriving (Show)
 
-run :: App a -> IO ((Either TypeException a, LogMessage), AppCache)
-run app =
-  let config = AppConfig Enviroment.filePath (Enviroment.pageSize)
-      appstate = AppCache [] [] [] [] []
-      full = runStateT (runReaderT (runWriterT (runExceptT (runApp app))) config) appstate
-   in full >>= \((errors, logsApp), stateApp) -> return ((errors, logsApp), stateApp)
+
+-- run :: App a -> IO ((Either TypeException a, LogMessage), AppCache)
+-- run app =
+--   let config = AppConfig Enviroment.filePath (Enviroment.pageSize)
+--       appstate = AppCache [] [] [] [] []
+--       full = runStateT (runReaderT (runWriterT (runExceptT (runApp app))) config) appstate
+--    in full >>= \((errors, logsApp), stateApp) -> return ((errors, logsApp), stateApp)

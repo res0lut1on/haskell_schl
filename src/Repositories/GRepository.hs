@@ -4,21 +4,21 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Repositories.GRepository (EntityName (..), GenericRepository (..), ReadWriteDataEntity (..)) where
+module Repositories.GRepository (EntityName (..), GenericRepository (..)) where
 
 import Control.Monad.Reader (MonadReader (ask))
 import Control.Monad.State
 import Control.Monad.Writer (MonadWriter (tell))
+import Data.DataBase.ReadWriteDataBase.ReadWriteDataBaseClass (ReadWriteDataBase (..))
 import Data.RepEntity.BaseEntity (BaseEntity (..), EntityName (returnNameEntity))
 import Data.SearchModel
 import LibFold (addInTheEnd)
-import ReadWrite.ReadWriteEntityClass (ReadWriteDataEntity (..))
 import Services.ApplyFilter (pagination)
 import Startup (App, AppConfig (pageSize))
 import Util.CacheStyle
 import Util.Utilities
 
-class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepository a where
+class (BaseEntity a, CacheStyle a, Show a, ReadWriteDataBase a) => GenericRepository a where
   getList :: App [a]
   getList =
     tell ["Method getList begin"]
@@ -52,7 +52,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
   addEntity entity =
     let newId = getLastId <$> (getList :: App [a])
      in tell ["AddEntity begin"] >> newId >>= \res ->
-          addNewEnt (entType entity) res
+          addNewEnt entity
             >> tell ["AddEntity with entity = " ++ getNameEnt @a]
             >> tell ["AddEntity entity with id = " ++ show (entId entity)]
             >> clearCache @a
@@ -67,7 +67,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
           >> appArrEnt
           >>= ( isValidArr "Edit" eid
                   >=> ( \res ->
-                          ( writeAllDataEntity . filter (\a -> entId a /= eid)
+                          ( deleteEnt . head . filter (\a -> entId a == eid)
                               <$> listEnt
                           )
                             >> tell ["removeEid with entity = " ++ getNameEnt @a]
@@ -84,7 +84,7 @@ class (BaseEntity a, ReadWriteDataEntity a, CacheStyle a, Show a) => GenericRepo
      in tell ["editEntity begin"] >> appArrEnt >>= \arrEnt ->
           isValidArr "Edit" (entId newEnt) arrEnt
             >> tell ["editEntity with entity = " ++ getNameEnt @a]
-            >> writeAllDataEntity (addInTheEnd newEnt arrEnt)
+            >> updateEnt newEnt
             >> tell ["editEntity edit complete with entity " ++ show (entId newEnt)]
             >> clearCache @a
             >> tell ["editEntity end"]

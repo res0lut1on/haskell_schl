@@ -4,6 +4,7 @@
 module Repositories.CustomerGR (getCustomerByOrderId, getCustomerByOrder) where
 
 import Control.Monad.Writer (MonadWriter (tell))
+import Data.DataBase.ReadWriteDataBase.RWDBCustomer ()
 import Data.Entities
 import ReadWrite.ReadWriteCustomer ()
 import Repositories.GRepository

@@ -1,6 +1,5 @@
 module Data.Context
   ( сustomers,
-    products,
     shops,
     orders,
     productOrder,
@@ -43,12 +42,12 @@ shops =
       }
   ]
 
-products :: [Product]
-products =
-  [ Product 1 2 "Milk" 3.90 White,
-    Product 2 1 "Kabachok" 5.49 Other,
-    Product 3 2 "Honey bunny" 9.99 Black
-  ]
+-- products :: [Product]
+-- products =
+--   [ Product {1 2 "Milk" 3.90 White,}
+--     Product 2 1 "Kabachok" 5.49 Other,
+--     Product 3 2 "Honey bunny" 9.99 Black
+--   ]
 
 orders :: [Order]
 orders =

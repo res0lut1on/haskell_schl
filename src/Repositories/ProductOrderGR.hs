@@ -2,9 +2,8 @@
 
 module Repositories.ProductOrderGR () where
 
+import Data.DataBase.ReadWriteDataBase.RWDBProductOrder ()
 import Data.Entities
 import Repositories.GRepository
-import ReadWrite.ReadWriteProductOrder ()
 
 instance GenericRepository ProductOrder
-
