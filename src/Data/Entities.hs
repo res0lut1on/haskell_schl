@@ -15,7 +15,7 @@ data Product = Product
   { productId :: Int,
     productShopId :: Int,
     productName :: String,
-    productPrice :: String,
+    productPrice :: Double,
     productColor :: Color
   }
 

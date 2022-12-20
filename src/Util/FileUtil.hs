@@ -17,7 +17,7 @@ where
 
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.RWS (MonadReader (ask), MonadTrans (lift))
+import Control.Monad.RWS (MonadReader (ask))
 import Data.Context
   ( orders,
     productOrder,
@@ -171,7 +171,6 @@ addEnt ent = ask >>= \config -> liftIO $ appendFile (filePath config ++ "/" ++ e
 initDataBase :: App ()
 initDataBase =
   writeEntWhile сustomers
-    >> writeEntWhile products
     >> writeEntWhile products
     >> writeEntWhile shops
     >> writeEntWhile orders

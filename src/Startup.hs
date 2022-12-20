@@ -4,7 +4,7 @@
 {-# HLINT ignore "Redundant bracket" #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 
-module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..)) where
+module Startup (App (..), AppCache (..), TypeException (..), AppConfig (..), AppResult (..), run) where
 
 import Control.Monad.Error
 import Control.Monad.Except
@@ -12,8 +12,8 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Writer
 import Data.Entities
+import Database.MSSQLServer.Connection (ConnectInfo (..), Connection, connect)
 import qualified Environment as Enviroment
-import Database.MSSQLServer.Connection (Connection)
 
 newtype App a = App
   { runApp :: ExceptT TypeException (WriterT LogMessage (ReaderT AppConfig (StateT AppCache IO))) a
@@ -43,12 +43,6 @@ data AppConfig = AppConfig
     connectionString :: Connection
   }
 
-data TypeException = TypeException
-  { eId :: Int,
-    text :: String
-  }
-  deriving (Show)
-
 type LogMessage = [String]
 
 data AppResult a = AppResult
@@ -62,10 +56,27 @@ data AppData a
   | AppError {message :: String}
   deriving (Show)
 
+newtype TypeException = ElementNotFound String
+  deriving (Show)
 
--- run :: App a -> IO ((Either TypeException a, LogMessage), AppCache)
--- run app =
---   let config = AppConfig Enviroment.filePath (Enviroment.pageSize)
---       appstate = AppCache [] [] [] [] []
---       full = runStateT (runReaderT (runWriterT (runExceptT (runApp app))) config) appstate
---    in full >>= \((errors, logsApp), stateApp) -> return ((errors, logsApp), stateApp)
+run :: App a -> IO (AppResult a)
+run app =
+  let defaultConnectInfo =
+        defaultConnectInfo
+          { connectHost = "192.168.0.1",
+            connectPort = "1433",
+            connectDatabase = "HaskellDatabase",
+            connectUser = "dbo",
+            connectPassword = "some_password"
+          }
+      appstate = AppCache [] [] [] [] []
+   in do
+        conn <- connect defaultConnectInfo
+        let config = AppConfig Enviroment.filePath (Enviroment.pageSize) (conn)
+        let full = runStateT (runReaderT (runWriterT (runExceptT (runApp app))) config) appstate
+        ((errors, logsApp), stateApp) <- full
+        return $ res errors logsApp stateApp
+  where
+    res :: Either TypeException a -> LogMessage -> AppCache -> AppResult a
+    res (Left err) logsApp stateApp = AppResult logsApp stateApp (AppError (show err))
+    res (Right r) logsApp stateApp = AppResult logsApp stateApp (AppData r)

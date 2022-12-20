@@ -27,6 +27,11 @@ dependencies:
 - blaze-html
 - mtl
 - text
+- wai
+- http-types
+- warp
+- bytestring
+- blaze-markup
 
 ghc-options:
 - -Wall
